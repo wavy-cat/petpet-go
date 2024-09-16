@@ -32,4 +32,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: wavy-cat/petpet-go:latest
+          tags: latest
