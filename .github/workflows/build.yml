@@ -32,3 +32,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          tags:
+            - latest
