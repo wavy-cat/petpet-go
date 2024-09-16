@@ -11,8 +11,6 @@ jobs:
     permissions:
       packages: write
       contents: read
-      attestations: write
-      id-token: write
 
     steps:
       - name: Checkout repository
@@ -32,4 +30,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: latest
+          tags: ghcr.io/wavy-cat/petpet-go:latest
