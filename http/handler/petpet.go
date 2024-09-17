@@ -74,6 +74,9 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Устанавливаем Content-Type
+	w.Header().Set("Content-Type", "image/gif")
+
 	// Отправляем гифку
 	buf := make([]byte, 1024)
 	for {

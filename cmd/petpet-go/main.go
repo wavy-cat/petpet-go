@@ -27,6 +27,7 @@ func main() {
 		Next:   handler.Handler{},
 	}
 	router.Handle("/ds/{user_id}.gif", &handle).Methods(http.MethodGet)
+	router.Handle("/ds/{user_id}", &handle).Methods(http.MethodGet)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte("Ты думал тут что-то будет?"))
