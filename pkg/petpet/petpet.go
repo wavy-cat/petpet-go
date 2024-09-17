@@ -2,7 +2,9 @@ package petpet
 
 import (
 	"bytes"
+	"errors"
 	"github.com/nfnt/resize"
+	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"image"
 	"image/color"
 	"image/draw"
@@ -32,36 +34,33 @@ func resizeImage(img image.Image, newWidth, newHeight int) image.Image {
 	return resize.Resize(uint(newWidth), uint(newHeight), img, resize.Lanczos3)
 }
 
-// Генерирует палитру на основе цветов изображения.
-// Первый цвет всегда прозрачный (0, 0, 0, 0).
-func generatePalette(img image.Image, numColors int) []color.Color {
-	smallImg := resize.Resize(64, 0, img, resize.NearestNeighbor)
-	bounds := smallImg.Bounds()
-	colorMap := make(map[color.Color]struct{})
-
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			c := smallImg.At(x, y)
-			colorMap[c] = struct{}{}
-		}
+// Создаёт палитру цветов на основе переданных изображений.
+// Сумма цветов всех изображений не должна превышать 256 с `addTransparent` в значении false
+// или `255` если установлено `true`.
+func createPalette(addTransparent bool, quantizer quantizer, images ...colorCountedImage) (color.Palette, error) {
+	palette := make([]color.Color, 0, 256)
+	if addTransparent {
+		palette = []color.Color{color.RGBA{}}
 	}
 
-	var palette []color.Color
-	for c := range colorMap {
-		palette = append(palette, c)
-		if len(palette) >= numColors {
-			break
+	for _, val := range images {
+		imgPalette, err := quantizer.QuantizeImage(val.Image, val.ColorCount)
+		if err != nil {
+			return nil, err
 		}
+		palette = append(palette, imgPalette...)
 	}
 
-	palette[0] = color.RGBA{}
+	if len(palette) > 256 {
+		return nil, errors.New("the palette has more than 256 colors")
+	}
 
-	return palette
+	return palette, nil
 }
 
-func createTransparentImage(baseImg image.Image, width, height int) *image.Paletted {
+func createTransparentImage(width, height int, palette color.Palette) *image.Paletted {
 	rect := image.Rect(0, 0, width, height)
-	return image.NewPaletted(rect, generatePalette(baseImg, 256))
+	return image.NewPaletted(rect, palette)
 }
 
 func pasteImage(dest *image.Paletted, src image.Image, offsetX, offsetY int) {
@@ -91,18 +90,36 @@ func MakeGif(source io.Reader, config Config) (io.Reader, error) {
 		disposals []byte
 	)
 
+	basePalette, err := createPalette(
+		true,
+		quantizers.HierarhicalQuantizer{},
+		[]colorCountedImage{
+			{
+				Image:      baseImg,
+				ColorCount: 240,
+			},
+			{
+				Image:      hands[0],
+				ColorCount: 15,
+			}}...)
+	if err != nil {
+		return nil, err
+	}
+
 	for i := 0; i < frames; i++ {
-		canvas := createTransparentImage(baseImg, width, height)
+		canvas := createTransparentImage(width, height, basePalette)
 
 		squeeze := float64(i)
 		if i >= frames/2 {
 			squeeze = float64(frames - i)
 		}
 
-		scaleX := 0.8 + squeeze*0.02
-		scaleY := 0.8 - squeeze*0.05
-		offsetX := int((1 - scaleX) * float64(width) * 0.5)
-		offsetY := int((1 - scaleY) * float64(height))
+		var (
+			scaleX  = 0.8 + squeeze*0.02
+			scaleY  = 0.8 - squeeze*0.05
+			offsetX = int((1 - scaleX) * float64(width) * 0.5)
+			offsetY = int((1 - scaleY) * float64(height))
+		)
 
 		resizedImg := resizeImage(baseImg, int(float64(width)*scaleX), int(float64(height)*scaleY))
 		pasteImage(canvas, resizedImg, offsetX, offsetY)

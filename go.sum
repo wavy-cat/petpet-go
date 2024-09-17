@@ -1,3 +1,7 @@
+github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88 h1:EgonejJ+bvJhCoGqJc2Thr93biEv9D2QRjXDaYDjr5U=
+github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88/go.mod h1:dO+3fLK/eeT19asBbQ3M+jL2nXaos6zbOMCT3nFXK0c=
+github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e h1:jZ//lt2fy3A5j5lEGMMK38K21Bucv7npcXyKTL4gqdk=
+github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e/go.mod h1:7wcsEAXsnjypDiUlel3HRfyosv3k02VSua2WgpF1llg=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
