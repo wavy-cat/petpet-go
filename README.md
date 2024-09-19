@@ -19,8 +19,12 @@ go run github.com/wavy-cat/petpet-go/cmd/petpet-go
 
 ## Usage
 
-<kbd>GET</kbd> `/ds/{user_id}?delay=5`
+<kbd>GET</kbd> `/ds/{user_id}?delay=5&no-cache=false`
+
+Параметры:
 
 `{user_id}` - ID пользователя в Discord.
 
-`?delay` - скорость GIF (по-умолчанию 5).
+`?delay` (int) - скорость GIF. По-умолчанию `5`.
+
+`?no-cache` (bool) - отключить ли кэширование (заголовки Cache-Control). По-умолчанию `false`.

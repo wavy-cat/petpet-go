@@ -58,6 +58,16 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Получаем no-cache из параметров
+	switch r.URL.Query().Get("no-cache") {
+	case "true":
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+		w.Header().Set("Pragma", "no-cache") // Для совместимости со старыми браузерами
+		w.Header().Set("Expires", "0")       // Для совместимости со старыми браузерами
+	default:
+		w.Header().Set("Cache-Control", "max-age=300")
+	}
+
 	// Генерируем гифку
 	config := petpet.DefaultConfig
 	config.Delay = delay
