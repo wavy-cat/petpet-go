@@ -11,6 +11,7 @@ import (
 	"image/gif"
 	"image/png"
 	"io"
+	"sync"
 )
 
 func exportGIF(images []*image.Paletted, delays []int, disposals []byte) (bytes.Buffer, error) {
@@ -85,9 +86,9 @@ func MakeGif(source io.Reader, config Config) (io.Reader, error) {
 
 	baseImg = resizeImage(baseImg, width, height)
 	var (
-		images    []*image.Paletted
-		delays    []int
-		disposals []byte
+		images    = make([]*image.Paletted, frames)
+		delays    = make([]int, frames)
+		disposals = make([]byte, frames)
 	)
 
 	basePalette, err := createPalette(
@@ -106,31 +107,39 @@ func MakeGif(source io.Reader, config Config) (io.Reader, error) {
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(frames)
+
 	for i := 0; i < frames; i++ {
-		canvas := createTransparentImage(width, height, basePalette)
+		go func(i int) {
+			defer wg.Done()
+			canvas := createTransparentImage(width, height, basePalette)
 
-		squeeze := float64(i)
-		if i >= frames/2 {
-			squeeze = float64(frames - i)
-		}
+			squeeze := float64(i)
+			if i >= frames/2 {
+				squeeze = float64(frames - i)
+			}
 
-		var (
-			scaleX  = 0.8 + squeeze*0.02
-			scaleY  = 0.8 - squeeze*0.05
-			offsetX = int((1 - scaleX) * float64(width) * 0.5)
-			offsetY = int((1 - scaleY) * float64(height))
-		)
+			var (
+				scaleX  = 0.8 + squeeze*0.02
+				scaleY  = 0.8 - squeeze*0.05
+				offsetX = int((1 - scaleX) * float64(width) * 0.5)
+				offsetY = int((1 - scaleY) * float64(height))
+			)
 
-		resizedImg := resizeImage(baseImg, int(float64(width)*scaleX), int(float64(height)*scaleY))
-		pasteImage(canvas, resizedImg, offsetX, offsetY)
+			resizedImg := resizeImage(baseImg, int(float64(width)*scaleX), int(float64(height)*scaleY))
+			pasteImage(canvas, resizedImg, offsetX, offsetY)
 
-		petFrame := resizeImage(hands[i], width, height)
-		pasteImage(canvas, petFrame, 0, 0)
+			petFrame := resizeImage(hands[i], width, height)
+			pasteImage(canvas, petFrame, 0, 0)
 
-		images = append(images, canvas)
-		delays = append(delays, delay)
-		disposals = append(disposals, disposal)
+			images[i] = canvas
+			delays[i] = delay
+			disposals[i] = disposal
+		}(i)
 	}
+
+	wg.Wait()
 
 	data, err := exportGIF(images, delays, disposals)
 	if err != nil {
