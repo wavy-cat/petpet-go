@@ -1,8 +1,14 @@
 # petpet-go
 
-Веб-сервер для генерации petpet гифок на основе аватарки пользователя Discord.
+A web service for generating petpet GIFs based on a Discord user's avatar.
 
 ## Getting started
+
+* Docker
+
+```bash
+docker run ghcr.io/wavy-cat/petpet-go
+```
 
 * Go
 
@@ -12,19 +18,24 @@ go run github.com/wavy-cat/petpet-go/cmd/petpet-go
 
 ## Environment
 
-| Name      | Default | Descripton                                                                     |
-|-----------|---------|--------------------------------------------------------------------------------|
-| `ADDRESS` | `:80`   | Адрес (включая порт), на котором будет работать сервер                         |
-| `PORT`    | `80`    | Порт на котором будет работать сервер. Используется, если `ADDRESS` не задано. |
+| Name      | Default | Example         | Description                                                             |
+|-----------|---------|-----------------|-------------------------------------------------------------------------|
+| `ADDRESS` | `:80`   | `127.0.0.1:443` | The address (including port) where the server will run.                 |
+| `PORT`    | `80`    | `443`           | The port where the server will run. Used if `ADDRESS` is not specified. |
 
 ## Usage
 
 <kbd>GET</kbd> `/ds/{user_id}?delay=5&no-cache=false`
 
-Параметры:
+### Path parameters
 
-`{user_id}` - ID пользователя в Discord.
+| Name        | Type      | Description            |
+|-------------|-----------|------------------------|
+| `{user_id}` | Snowflake | The Discord user's ID. |             
 
-`?delay` (int) - скорость GIF. По-умолчанию `5`.
+### Query parameters
 
-`?no-cache` (bool) - отключить ли кэширование (заголовки Cache-Control). По-умолчанию `false`.
+| Name       | Default | Type             | Description                                         |
+|------------|---------|------------------|-----------------------------------------------------|
+| `delay`    | `5`     | Unsigned Integer | GIF speed.                                          |
+| `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers). |  
