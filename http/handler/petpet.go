@@ -6,6 +6,7 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/answer"
 	"github.com/wavy-cat/petpet-go/pkg/avatar"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
+	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -73,7 +74,7 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	config.Delay = delay
 	avatarReader := bytes.NewReader(avatarImage)
 
-	gif, err := petpet.MakeGif(avatarReader, config)
+	gif, err := petpet.MakeGif(avatarReader, config, quantizers.HierarhicalQuantizer{})
 	if err != nil {
 		logger.Error("Failed to generate gif",
 			zap.Error(err), zap.String("User ID", userId))

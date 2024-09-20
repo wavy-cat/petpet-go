@@ -18,10 +18,11 @@ go run github.com/wavy-cat/petpet-go/cmd/petpet-go
 
 ## Environment
 
-| Name      | Default | Example         | Description                                                             |
-|-----------|---------|-----------------|-------------------------------------------------------------------------|
-| `ADDRESS` | `:80`   | `127.0.0.1:443` | The address (including port) where the server will run.                 |
-| `PORT`    | `80`    | `443`           | The port where the server will run. Used if `ADDRESS` is not specified. |
+| Name               | Default | Example         | Description                                                             |
+|--------------------|---------|-----------------|-------------------------------------------------------------------------|
+| `ADDRESS`          | `:80`   | `127.0.0.1:443` | The address (including port) where the server will run.                 |
+| `PORT`             | `80`    | `443`           | The port where the server will run. Used if `ADDRESS` is not specified. |
+| `SHUTDOWN_TIMEOUT` | `5`     | `10`            | Time in seconds for correct server shutdown                             |
 
 ## Usage
 

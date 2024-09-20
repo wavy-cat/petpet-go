@@ -24,6 +24,6 @@ type colorCountedImage struct {
 	ColorCount int // Кол-во цветов в палитре
 }
 
-type quantizer interface {
+type Quantizer interface {
 	QuantizeImage(img image.Image, count int) (color.Palette, error)
 }

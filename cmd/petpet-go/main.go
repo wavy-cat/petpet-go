@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/wavy-cat/petpet-go/http/handler"
@@ -8,16 +10,24 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"go.uber.org/zap"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
 	// Настраиваем логгер
 	logger, err := zap.NewProduction()
 	if err != nil {
-		fmt.Println("Error initializing logger:", err)
-		return
+		panic(err)
 	}
-	defer logger.Sync()
+	defer func(logger *zap.Logger) {
+		err := logger.Sync()
+		if err != nil {
+			fmt.Println("Error syncing logger:", err)
+		}
+	}(logger)
 
 	// Настраиваем роутер
 	router := mux.NewRouter()
@@ -36,9 +46,34 @@ func main() {
 		}
 	})
 
-	// Запускаем сервер
-	logger.Info("Starting the HTTP server...")
-	if err := http.ListenAndServe(config.HTTPAddress, router); err != nil {
-		logger.Fatal(err.Error())
+	// Настраиваем сервер
+	srv := &http.Server{
+		Addr:    config.HTTPAddress,
+		Handler: router,
 	}
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
+
+	// Запускаем сервер
+	go func() {
+		logger.Info("Starting the HTTP server...")
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Fatal("Server failed:", zap.Error(err))
+		}
+	}()
+
+	// Ожидаем сигнал завершения
+	<-stop
+
+	// Создаём контекст с таймаутом для корректного завершения сервера
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.ShutdownTimeout)*time.Second)
+	defer cancel()
+
+	logger.Info("Shutting down the server...")
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Fatal("Server forced to shutdown:", zap.Error(err))
+	}
+
+	logger.Info("Server exited properly")
 }

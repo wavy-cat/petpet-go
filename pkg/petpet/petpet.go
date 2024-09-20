@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"github.com/nfnt/resize"
-	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"image"
 	"image/color"
 	"image/draw"
@@ -38,7 +37,7 @@ func resizeImage(img image.Image, newWidth, newHeight int) image.Image {
 // Создаёт палитру цветов на основе переданных изображений.
 // Сумма цветов всех изображений не должна превышать 256 с `addTransparent` в значении false
 // или `255` если установлено `true`.
-func createPalette(addTransparent bool, quantizer quantizer, images ...colorCountedImage) (color.Palette, error) {
+func createPalette(addTransparent bool, quantizer Quantizer, images ...colorCountedImage) (color.Palette, error) {
 	palette := make([]color.Color, 0, 256)
 	if addTransparent {
 		palette = []color.Color{color.RGBA{}}
@@ -70,7 +69,7 @@ func pasteImage(dest *image.Paletted, src image.Image, offsetX, offsetY int) {
 
 // MakeGif генерирует pet-pet гифку.
 // `source` должен быть типом io.Reader и содержать PNG изображение.
-func MakeGif(source io.Reader, config Config) (io.Reader, error) {
+func MakeGif(source io.Reader, config Config, quantizer Quantizer) (io.Reader, error) {
 	baseImg, err := png.Decode(source)
 	if err != nil {
 		return nil, err
@@ -93,7 +92,7 @@ func MakeGif(source io.Reader, config Config) (io.Reader, error) {
 
 	basePalette, err := createPalette(
 		true,
-		quantizers.HierarhicalQuantizer{},
+		quantizer,
 		[]colorCountedImage{
 			{
 				Image:      baseImg,
