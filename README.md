@@ -23,6 +23,10 @@ go run github.com/wavy-cat/petpet-go/cmd/petpet-go
 | `ADDRESS`          | `:80`   | `127.0.0.1:443` | The address (including port) where the server will run.                 |
 | `PORT`             | `80`    | `443`           | The port where the server will run. Used if `ADDRESS` is not specified. |
 | `SHUTDOWN_TIMEOUT` | `5`     | `10`            | Time in seconds for correct server shutdown                             |
+| `BOT_TOKEN`        | None    | `your_token`    | Token from Discord bot. Used for authorization in the Discord API.      |
+
+> [!NOTE]
+> `BOT_TOKEN` is an optional variable. If you don't specify it, the server will receive user avatars not directly from Discord, but through avatar.cdev.shop.
 
 ## Usage
 
@@ -40,3 +44,8 @@ go run github.com/wavy-cat/petpet-go/cmd/petpet-go
 |------------|---------|------------------|-----------------------------------------------------|
 | `delay`    | `5`     | Unsigned Integer | GIF speed.                                          |
 | `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers). |  
+
+## PetPet in Other Languages
+
+* **Python** - [nakidai/petthecord](https://github.com/nakidai/petthecord)
+* **Rust** - [messengernew/petpet-api](https://github.com/messengernew/petpet-api)

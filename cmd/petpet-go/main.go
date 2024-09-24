@@ -8,6 +8,7 @@ import (
 	"github.com/wavy-cat/petpet-go/http/handler"
 	"github.com/wavy-cat/petpet-go/http/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
+	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -29,12 +30,22 @@ func main() {
 		}
 	}(logger)
 
+	objects := make(map[string]any)
+
+	// Создаём объект Discord бота
+	if config.BotToken != "" {
+		objects["bot"] = discord.NewBot(config.BotToken)
+	}
+
 	// Настраиваем роутер
 	router := mux.NewRouter()
 
-	handle := middleware.Logging{
-		Logger: logger,
-		Next:   handler.Handler{},
+	handle := middleware.Essentials{
+		Next: &middleware.Logging{
+			Logger: logger,
+			Next:   handler.Handler{},
+		},
+		Objects: objects,
 	}
 	router.Handle("/ds/{user_id}.gif", &handle).Methods(http.MethodGet)
 	router.Handle("/ds/{user_id}", &handle).Methods(http.MethodGet)

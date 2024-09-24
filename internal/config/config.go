@@ -8,6 +8,7 @@ import (
 var (
 	HTTPAddress     = ":80" // Address where the server will run
 	ShutdownTimeout = 5     // Time in seconds for correct server shutdown
+	BotToken        string  // Secret authorization token
 )
 
 func init() {
@@ -24,4 +25,6 @@ func init() {
 			panic(err)
 		}
 	}
+
+	BotToken = os.Getenv("BOT_TOKEN")
 }

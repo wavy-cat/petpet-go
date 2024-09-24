@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/wavy-cat/petpet-go/internal/answer"
 	"github.com/wavy-cat/petpet-go/pkg/avatar"
+	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
@@ -23,20 +24,29 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	userId, ok := mux.Vars(r)["user_id"]
 	if !ok {
 		logger.Warn("Failed to get user ID")
-		err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, "User ID not sent")
-		if err != nil {
+		if err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, "User ID not sent"); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
 	}
 
+	// Получаем объект бота
+	bot, ok := r.Context().Value("bot").(*discord.Bot)
+
 	// Получаем аватар по ID
-	avatarImage, err := avatar.GetAvatarFromID(userId)
+	var avatarImage []byte
+	var err error
+
+	switch ok {
+	case true:
+		avatarImage, err = GetAvatarUsingBot(bot, userId)
+	case false:
+		avatarImage, err = avatar.GetAvatarFromID(userId)
+	}
+
 	if err != nil {
-		logger.Warn("Failed to get user avatar",
-			zap.Error(err), zap.String("User ID", userId))
-		err := answer.RespondWithErrorMessage(w, http.StatusInternalServerError, err.Error())
-		if err != nil {
+		logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
+		if err := answer.RespondWithErrorMessage(w, http.StatusInternalServerError, err.Error()); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
@@ -51,8 +61,7 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		delay, err = strconv.Atoi(delayParam)
 		if err != nil {
-			err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, err.Error())
-			if err != nil {
+			if err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, err.Error()); err != nil {
 				logger.Error("Error sending response", zap.Error(err))
 			}
 			return
@@ -76,10 +85,8 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	gif, err := petpet.MakeGif(avatarReader, config, quantizers.HierarhicalQuantizer{})
 	if err != nil {
-		logger.Error("Failed to generate gif",
-			zap.Error(err), zap.String("User ID", userId))
-		err := answer.RespondWithDefaultError(w, http.StatusInternalServerError)
-		if err != nil {
+		logger.Error("Failed to generate gif", zap.Error(err), zap.String("User ID", userId))
+		if err := answer.RespondWithDefaultError(w, http.StatusInternalServerError); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
@@ -93,10 +100,8 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for {
 		n, err := gif.Read(buf)
 		if err != nil && err != io.EOF {
-			logger.Error("Error reading gif",
-				zap.Error(err), zap.String("User ID", userId))
-			err := answer.RespondWithDefaultError(w, http.StatusInternalServerError)
-			if err != nil {
+			logger.Error("Error reading gif", zap.Error(err), zap.String("User ID", userId))
+			if err := answer.RespondWithDefaultError(w, http.StatusInternalServerError); err != nil {
 				logger.Error("Error sending response", zap.Error(err))
 			}
 			return
