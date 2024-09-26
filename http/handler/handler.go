@@ -75,7 +75,7 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Pragma", "no-cache") // Для совместимости со старыми браузерами
 		w.Header().Set("Expires", "0")       // Для совместимости со старыми браузерами
 	default:
-		w.Header().Set("Cache-Control", "max-age=300")
+		w.Header().Set("Cache-Control", "max-age=900")
 	}
 
 	// Генерируем гифку
