@@ -1,4 +1,4 @@
-package handler
+package petpet
 
 import (
 	"bytes"

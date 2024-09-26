@@ -1,4 +1,4 @@
-package handler
+package petpet
 
 import (
 	"github.com/wavy-cat/petpet-go/pkg/discord"
