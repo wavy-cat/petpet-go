@@ -9,9 +9,9 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
-	"io"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Handler struct{}
@@ -30,6 +30,33 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.ToLower(userId) == "user_id" {
+		_, err := answer.RespondHTMLError(w, http.StatusOK, "Misuse",
+			"Replace user_id in the URL with real Discord user ID 😉")
+		if err != nil {
+			logger.Error("Error sending response", zap.Error(err))
+		}
+		return
+	}
+
+	// Получаем delay из параметров
+	delayParam := strings.TrimSpace(r.URL.Query().Get("delay"))
+	var delay int
+
+	switch strings.TrimSpace(r.URL.Query().Get("delay")) {
+	case "":
+		delay = 2
+	default:
+		var err error
+		delay, err = strconv.Atoi(delayParam)
+		if err != nil {
+			if _, err := answer.RespondHTMLError(w, http.StatusBadRequest, "Incorrect delay", err.Error()); err != nil {
+				logger.Error("Error sending response", zap.Error(err))
+			}
+			return
+		}
+	}
+
 	// Получаем объект бота
 	bot, ok := r.Context().Value("bot").(*discord.Bot)
 
@@ -45,27 +72,19 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
-		if err := answer.RespondWithErrorMessage(w, http.StatusInternalServerError, err.Error()); err != nil {
+		switch {
+		case strings.Contains(err.Error(), "10013"):
+			_, err = answer.RespondHTMLError(w, http.StatusNotFound, "Not Found", "User not found")
+		case strings.Contains(err.Error(), "50035"):
+			_, err = answer.RespondHTMLError(w, http.StatusBadRequest, "Incorrect ID", "Check your ID for correctness")
+		default:
+			logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
+			_, err = answer.RespondHTMLError(w, http.StatusInternalServerError, "Unknown Error", "Something went wrong")
+		}
+		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
-	}
-
-	// Получаем delay из параметров
-	delayParam := r.URL.Query().Get("delay")
-	var delay int
-	switch delayParam {
-	case "":
-		delay = 2
-	default:
-		delay, err = strconv.Atoi(delayParam)
-		if err != nil {
-			if err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, err.Error()); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
-			return
-		}
 	}
 
 	// Получаем no-cache из параметров
@@ -96,24 +115,8 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/gif")
 
 	// Отправляем гифку
-	buf := make([]byte, 1024)
-	for {
-		n, err := gif.Read(buf)
-		if err != nil && err != io.EOF {
-			logger.Error("Error reading gif", zap.Error(err), zap.String("User ID", userId))
-			if err := answer.RespondWithDefaultError(w, http.StatusInternalServerError); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
-			return
-		}
-
-		if err == io.EOF || n == 0 {
-			break
-		}
-
-		if _, err := w.Write(buf); err != nil {
-			logger.Error("Error sending response", zap.Error(err))
-			break
-		}
+	err = answer.RespondReader(w, http.StatusOK, gif)
+	if err != nil {
+		logger.Error("Error sending response", zap.Error(err))
 	}
 }

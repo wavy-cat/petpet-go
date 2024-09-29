@@ -3,6 +3,7 @@ package answer
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -46,4 +47,56 @@ func RespondWithDefaultError(w http.ResponseWriter, statusCode int) error {
 // RespondOnlyCode отправляет пустой ответ, состоящий только из statusCode.
 func RespondOnlyCode(w http.ResponseWriter, statusCode int) {
 	w.WriteHeader(statusCode)
+}
+
+// RespondHTMLError отправляет ошибку в виде HTML с meta-тегами
+func RespondHTMLError(w http.ResponseWriter, statusCode int, title, details string) (int, error) {
+	const body = `<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="UTF-8">
+			<title>PetPet</title>
+			<meta content="%s" property="og:title"/>
+			<meta content="%s" property="og:description"/>
+			<meta content="https://github.com/wavy-cat/petpet-go" property="og:url"/>
+			<meta content="#EE204D" data-react-helmet="true" name="theme-color"/>
+			<style>
+			body {
+				color: white;
+				background-color: black;
+			}
+			</style>
+		</head>
+		<body>
+			<p>%s</p>
+		</body>
+		</html>`
+
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(statusCode)
+
+	responseBody := fmt.Sprintf(body, title, details, details)
+	return w.Write([]byte(responseBody))
+}
+
+func RespondReader(w http.ResponseWriter, statusCode int, reader io.Reader) error {
+	w.WriteHeader(statusCode)
+
+	buf := make([]byte, 1024)
+	for {
+		n, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if err == io.EOF || n == 0 {
+			break
+		}
+
+		_, err = w.Write(buf)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
