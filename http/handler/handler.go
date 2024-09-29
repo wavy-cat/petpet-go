@@ -31,7 +31,7 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.ToLower(userId) == "user_id" {
-		_, err := answer.RespondHTMLError(w, http.StatusOK, "Misuse",
+		_, err := answer.RespondHTMLError(w, "Misuse",
 			"Replace user_id in the URL with real Discord user ID 😉")
 		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))
@@ -50,7 +50,7 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var err error
 		delay, err = strconv.Atoi(delayParam)
 		if err != nil {
-			if _, err := answer.RespondHTMLError(w, http.StatusBadRequest, "Incorrect delay", err.Error()); err != nil {
+			if _, err := answer.RespondHTMLError(w, "Incorrect delay", err.Error()); err != nil {
 				logger.Error("Error sending response", zap.Error(err))
 			}
 			return
@@ -74,12 +74,12 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case strings.Contains(err.Error(), "10013"):
-			_, err = answer.RespondHTMLError(w, http.StatusNotFound, "Not Found", "User not found")
+			_, err = answer.RespondHTMLError(w, "Not Found", "User not found")
 		case strings.Contains(err.Error(), "50035"):
-			_, err = answer.RespondHTMLError(w, http.StatusBadRequest, "Incorrect ID", "Check your ID for correctness")
+			_, err = answer.RespondHTMLError(w, "Incorrect ID", "Check your ID for correctness")
 		default:
 			logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
-			_, err = answer.RespondHTMLError(w, http.StatusInternalServerError, "Unknown Error", "Something went wrong")
+			_, err = answer.RespondHTMLError(w, "Unknown Error", "Something went wrong")
 		}
 		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))

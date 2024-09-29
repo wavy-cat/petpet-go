@@ -50,7 +50,7 @@ func RespondOnlyCode(w http.ResponseWriter, statusCode int) {
 }
 
 // RespondHTMLError отправляет ошибку в виде HTML с meta-тегами
-func RespondHTMLError(w http.ResponseWriter, statusCode int, title, details string) (int, error) {
+func RespondHTMLError(w http.ResponseWriter, title, details string) (int, error) {
 	const body = `<!DOCTYPE html>
 		<html>
 		<head>
@@ -73,7 +73,7 @@ func RespondHTMLError(w http.ResponseWriter, statusCode int, title, details stri
 		</html>`
 
 	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(statusCode)
+	w.WriteHeader(http.StatusOK)
 
 	responseBody := fmt.Sprintf(body, title, details, details)
 	return w.Write([]byte(responseBody))
