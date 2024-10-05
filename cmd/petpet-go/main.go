@@ -8,6 +8,8 @@ import (
 	"github.com/wavy-cat/petpet-go/http/handler"
 	"github.com/wavy-cat/petpet-go/http/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
+	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
+	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
 	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"go.uber.org/zap"
 	"net/http"
@@ -35,6 +37,23 @@ func main() {
 	// Создаём объект Discord бота
 	if config.BotToken != "" {
 		objects["bot"] = discord.NewBot(config.BotToken)
+	}
+
+	// Create a cache object
+	switch config.CacheStorage {
+	case "memory":
+		objects["cache"], err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		if err != nil {
+			logger.Fatal("Error creating memory cache object", zap.Error(err))
+		}
+	case "fs":
+		objects["cache"], err = fs.NewFileSystemCache(config.CacheFSPath)
+		if err != nil {
+			logger.Fatal("Error creating memory cache object", zap.Error(err))
+		}
+	case "":
+	default:
+		logger.Warn("Passed an incorrect storage type for the cache. The cache will be disabled")
 	}
 
 	// Настраиваем роутер
