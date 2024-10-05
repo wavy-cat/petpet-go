@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -38,7 +38,7 @@ func (fsc *FileSystemCache) Pull(key string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("cache miss for key: %s", key)
+			return nil, errors.New("not exist")
 		}
 		return nil, err
 	}

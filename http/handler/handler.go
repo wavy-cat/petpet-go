@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"github.com/gorilla/mux"
 	"github.com/wavy-cat/petpet-go/internal/answer"
-	"github.com/wavy-cat/petpet-go/pkg/avatar"
+	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -57,34 +58,83 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Получаем объект бота
-	bot, ok := r.Context().Value("bot").(*discord.Bot)
+	cacheObj, cacheOk := r.Context().Value("cache").(cache.BytesCache) // Getting the cache object
+	bot, ok := r.Context().Value("bot").(*discord.Bot)                 // Getting the bot object
 
 	// Получаем аватар по ID
-	var avatarImage []byte
-	var err error
+	var (
+		avatarImage []byte
+		avatarId    string
+	)
 
 	switch ok {
 	case true:
-		avatarImage, err = GetAvatarUsingBot(bot, userId)
-	case false:
-		avatarImage, err = avatar.GetAvatarFromID(userId)
-	}
-
-	if err != nil {
-		switch {
-		case strings.Contains(err.Error(), "10013"):
-			_, err = answer.RespondHTMLError(w, "Not Found", "User not found")
-		case strings.Contains(err.Error(), "50035"):
-			_, err = answer.RespondHTMLError(w, "Incorrect ID", "Check your ID for correctness")
-		default:
-			logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
-			_, err = answer.RespondHTMLError(w, "Unknown Error", "Something went wrong")
-		}
+		user, err := bot.NewUserById(userId)
 		if err != nil {
-			logger.Error("Error sending response", zap.Error(err))
+			logger.Warn("Failed to get user", zap.Error(err), zap.String("User ID", userId))
+			title, status := checkError(err)
+
+			_, err = answer.RespondHTMLError(w, title, status)
+			if err != nil {
+				logger.Error("Error sending response", zap.Error(err))
+			}
+			return
 		}
-		return
+
+		// Checking whether the user has an avatar
+		if user.Avatar == nil {
+			_, err = answer.RespondHTMLError(w, "Not found", "Avatar not found")
+			if err != nil {
+				logger.Error("Error sending response", zap.Error(err))
+			}
+			return
+		}
+
+		// Getting the finished image from the cache
+		if cacheOk {
+			ok, err := responseFromCache(w, cacheObj, *user.Avatar)
+			if err != nil {
+				logger.Error("Error sending response from cache", zap.Error(err))
+			}
+			if ok {
+				return
+			}
+		}
+
+		// Getting the user's avatar
+		avatarImage, err = user.GetAvatar()
+		if err != nil {
+			logger.Warn("Failed to load user avatar", zap.Error(err), zap.String("User ID", userId))
+			_, err = answer.RespondHTMLError(w, "Unknown Error", "Something went wrong")
+			if err != nil {
+				logger.Error("Error sending response", zap.Error(err))
+			}
+			return
+		}
+
+		avatarId = *user.Avatar
+	case false:
+		var err error
+		avatarImage, avatarId, err = getAvatarUsingCdev(userId)
+		if err != nil {
+			logger.Warn("Failed to load user avatar", zap.Error(err), zap.String("User ID", userId))
+			_, err = answer.RespondHTMLError(w, "Error getting avatar", err.Error())
+			if err != nil {
+				logger.Error("Error sending response", zap.Error(err))
+			}
+			return
+		}
+
+		// Getting the finished image from the cache
+		if cacheOk {
+			ok, err := responseFromCache(w, cacheObj, avatarId)
+			if err != nil {
+				logger.Error("Error sending response from cache", zap.Error(err))
+			}
+			if ok {
+				return
+			}
+		}
 	}
 
 	// Получаем no-cache из параметров
@@ -115,8 +165,26 @@ func (Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/gif")
 
 	// Отправляем гифку
-	err = answer.RespondReader(w, http.StatusOK, gif)
+	data, err := io.ReadAll(gif)
+	if err != nil {
+		logger.Error("Failed to read GIF Reader", zap.Error(err))
+		_, err = answer.RespondHTMLError(w, "Internal Server Error", "Something went wrong")
+		if err != nil {
+			logger.Error("Error sending response", zap.Error(err))
+		}
+		return
+	}
+
+	_, err = w.Write(data)
 	if err != nil {
 		logger.Error("Error sending response", zap.Error(err))
+	}
+
+	// Adding an image to the cache
+	if cacheOk {
+		err = cacheObj.Push(avatarId, data)
+		if err != nil {
+			logger.Error("Failed to write data to cache", zap.Error(err))
+		}
 	}
 }

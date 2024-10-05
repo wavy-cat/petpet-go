@@ -59,7 +59,7 @@ func (l *LRUCache) Pull(key string) ([]byte, error) {
 		l.ll.MoveToFront(el)
 		return el.Value.(*entry).value, nil
 	}
-	return nil, errors.New("key not found")
+	return nil, errors.New("not exist")
 }
 
 func (l *LRUCache) removeOldest() {
