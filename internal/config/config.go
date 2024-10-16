@@ -7,11 +7,11 @@ import (
 
 var (
 	HTTPAddress         = ":80"     // Address where the server will run
-	ShutdownTimeout     = 5         // Time in seconds for correct server shutdown
+	ShutdownTimeout     = 5000      // Time in milliseconds for correct server shutdown
 	BotToken            string      // Secret authorization token
 	CacheStorage        string      // The storage type used for caching images
 	CacheMemoryCapacity = 100       // The memory storage capacity
-	CacheFSPath         = "./cache" // The path to the directory used for file system-based cache storage.
+	CacheFSPath         = "./cache" // The path to the directory used for a file system-based cache storage.
 )
 
 func init() {
@@ -30,7 +30,9 @@ func init() {
 		}
 	}
 
-	BotToken = os.Getenv("BOT_TOKEN")
+	if BotToken = os.Getenv("BOT_TOKEN"); BotToken == "" {
+		panic("BOT_TOKEN required variable")
+	}
 
 	CacheStorage = os.Getenv("CACHE_STORAGE")
 

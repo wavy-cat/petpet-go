@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,10 +16,10 @@ func NewBot(token string) *Bot {
 	return &Bot{token: token}
 }
 
-func (b Bot) NewUserById(id string) (*User, error) {
+func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 	url := fmt.Sprintf("%s/users/%s", baseURL, id)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
