@@ -3,7 +3,6 @@ package answer
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -38,17 +37,6 @@ func RespondWithErrorMessage(w http.ResponseWriter, statusCode int, message stri
 		})
 }
 
-// RespondWithDefaultError отправляет ответ с сообщением об ошибки на основе statusCode.
-// Текст берётся из http.StatusText.
-func RespondWithDefaultError(w http.ResponseWriter, statusCode int) error {
-	return RespondWithErrorMessage(w, statusCode, http.StatusText(statusCode))
-}
-
-// RespondOnlyCode отправляет пустой ответ, состоящий только из statusCode.
-func RespondOnlyCode(w http.ResponseWriter, statusCode int) {
-	w.WriteHeader(statusCode)
-}
-
 // RespondHTMLError отправляет ошибку в виде HTML с meta-тегами
 func RespondHTMLError(w http.ResponseWriter, title, details string) (int, error) {
 	const body = `<!DOCTYPE html>
@@ -77,26 +65,4 @@ func RespondHTMLError(w http.ResponseWriter, title, details string) (int, error)
 
 	responseBody := fmt.Sprintf(body, title, details, details)
 	return w.Write([]byte(responseBody))
-}
-
-func RespondReader(w http.ResponseWriter, statusCode int, reader io.Reader) error {
-	w.WriteHeader(statusCode)
-
-	buf := make([]byte, 1024)
-	for {
-		n, err := reader.Read(buf)
-		if err != nil && err != io.EOF {
-			return err
-		}
-
-		if err == io.EOF || n == 0 {
-			break
-		}
-
-		_, err = w.Write(buf)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

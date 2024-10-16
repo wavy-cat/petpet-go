@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -14,13 +15,19 @@ type User struct {
 	Avatar        *string `json:"avatar"`
 }
 
-func (u User) GetAvatar() ([]byte, error) {
+func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
 	if u.Avatar == nil {
 		return nil, errors.New("avatar not found")
 	}
 
 	url := fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", u.ID, *u.Avatar)
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

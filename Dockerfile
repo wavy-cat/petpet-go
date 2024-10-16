@@ -7,6 +7,6 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o /petpet github.com/wavy-cat/petpet-go/cmd/petpet-go
+RUN go build -o /petpet github.com/wavy-cat/petpet-go/cmd/app
 
 ENTRYPOINT ["/petpet"]

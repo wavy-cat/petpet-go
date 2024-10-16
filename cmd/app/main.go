@@ -5,12 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/wavy-cat/petpet-go/http/handler"
-	"github.com/wavy-cat/petpet-go/http/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
+	"github.com/wavy-cat/petpet-go/internal/handler/http/ds"
+	"github.com/wavy-cat/petpet-go/internal/middleware"
+	"github.com/wavy-cat/petpet-go/internal/repository"
+	"github.com/wavy-cat/petpet-go/internal/service"
+	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
 	"github.com/wavy-cat/petpet-go/pkg/discord"
+	"github.com/wavy-cat/petpet-go/pkg/petpet"
+	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
 	"net/http"
 	"os"
@@ -20,7 +25,7 @@ import (
 )
 
 func main() {
-	// Настраиваем логгер
+	// Setting up a logger
 	logger, err := zap.NewProduction()
 	if err != nil {
 		panic(err)
@@ -32,22 +37,16 @@ func main() {
 		}
 	}(logger)
 
-	objects := make(map[string]any)
-
-	// Создаём объект Discord бота
-	if config.BotToken != "" {
-		objects["bot"] = discord.NewBot(config.BotToken)
-	}
-
 	// Create a cache object
+	var cacheObj cache.BytesCache
 	switch config.CacheStorage {
 	case "memory":
-		objects["cache"], err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		cacheObj, err = memory.NewLRUCache(config.CacheMemoryCapacity)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
 	case "fs":
-		objects["cache"], err = fs.NewFileSystemCache(config.CacheFSPath)
+		cacheObj, err = fs.NewFileSystemCache(config.CacheFSPath)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
@@ -56,15 +55,21 @@ func main() {
 		logger.Warn("Passed an incorrect storage type for the cache. The cache will be disabled")
 	}
 
-	// Настраиваем роутер
+	// Create a bot object
+	discordBot := discord.NewBot(config.BotToken)
+
+	// Setting up the service
+	providers := map[string]repository.AvatarProvider{
+		"discord": repository.NewDiscordAvatarProvider(discordBot),
+	}
+	gifService := service.NewGIFService(cacheObj, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+
+	// Set up routing
 	router := mux.NewRouter()
 
-	handle := middleware.Essentials{
-		Next: &middleware.Logging{
-			Logger: logger,
-			Next:   handler.Handler{},
-		},
-		Objects: objects,
+	handle := middleware.Logging{
+		Logger: logger,
+		Next:   ds.NewHandler(gifService),
 	}
 	router.Handle("/ds/{user_id}.gif", &handle).Methods(http.MethodGet)
 	router.Handle("/ds/{user_id}", &handle).Methods(http.MethodGet)
@@ -74,9 +79,9 @@ func main() {
 		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
-	})
+	}).Methods(http.MethodGet, http.MethodHead)
 
-	// Настраиваем сервер
+	// Set up the server
 	srv := &http.Server{
 		Addr:    config.HTTPAddress,
 		Handler: router,
@@ -85,7 +90,7 @@ func main() {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	// Запускаем сервер
+	// Start the server
 	go func() {
 		logger.Info("Starting the HTTP server...")
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -93,11 +98,11 @@ func main() {
 		}
 	}()
 
-	// Ожидаем сигнал завершения
+	// Waiting for completion signal
 	<-stop
 
-	// Создаём контекст с таймаутом для корректного завершения сервера
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.ShutdownTimeout)*time.Second)
+	// Create a context with a timeout to shut down the server gracefully.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.ShutdownTimeout)*time.Millisecond)
 	defer cancel()
 
 	logger.Info("Shutting down the server...")
