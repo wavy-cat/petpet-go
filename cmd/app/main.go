@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/wavy-cat/petpet-go/internal/config"
-	"github.com/wavy-cat/petpet-go/internal/handler/http/ds"
+	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_apng"
+	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository"
 	"github.com/wavy-cat/petpet-go/internal/service"
@@ -38,15 +39,26 @@ func main() {
 	}(logger)
 
 	// Create a cache object
-	var cacheObj cache.BytesCache
+	var cachePNG, cacheGIF cache.BytesCache
+
 	switch config.CacheStorage {
 	case "memory":
-		cacheObj, err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		cacheGIF, err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		if err != nil {
+			logger.Fatal("Error creating memory cache object", zap.Error(err))
+		}
+
+		cachePNG, err = memory.NewLRUCache(config.CacheMemoryCapacity)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
 	case "fs":
-		cacheObj, err = fs.NewFileSystemCache(config.CacheFSPath)
+		cacheGIF, err = fs.NewFileSystemCache(config.CacheFSPath)
+		if err != nil {
+			logger.Fatal("Error creating memory cache object", zap.Error(err))
+		}
+
+		cachePNG, err = fs.NewFileSystemCache(config.CacheFSPath)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
@@ -62,17 +74,25 @@ func main() {
 	providers := map[string]repository.AvatarProvider{
 		"discord": repository.NewDiscordAvatarProvider(discordBot),
 	}
-	gifService := service.NewGIFService(cacheObj, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+	gifService := service.NewGIFService(cacheGIF, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+	apngService := service.NewAPngService(cachePNG, providers, petpet.DefaultConfig)
 
 	// Set up routing
 	router := mux.NewRouter()
 
-	handle := middleware.Logging{
+	gifHandle := middleware.Logging{
 		Logger: logger,
-		Next:   ds.NewHandler(gifService),
+		Next:   ds_gif.NewHandler(gifService),
 	}
-	router.Handle("/ds/{user_id}.gif", &handle).Methods(http.MethodGet)
-	router.Handle("/ds/{user_id}", &handle).Methods(http.MethodGet)
+	router.Handle("/ds/{user_id}.gif", &gifHandle).Methods(http.MethodGet)
+
+	apngHandle := middleware.Logging{
+		Logger: logger,
+		Next:   ds_apng.NewHandler(apngService),
+	}
+	router.Handle("/ds/{user_id}.apng", &apngHandle).Methods(http.MethodGet)
+
+	router.Handle("/ds/{user_id}", &gifHandle).Methods(http.MethodGet)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte("Waiting for something to happen?"))
@@ -92,7 +112,7 @@ func main() {
 
 	// Start the server
 	go func() {
-		logger.Info("Starting the HTTP server...")
+		logger.Info("Starting the HTTP server...", zap.String("Address", config.HTTPAddress))
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal("Server failed:", zap.Error(err))
 		}

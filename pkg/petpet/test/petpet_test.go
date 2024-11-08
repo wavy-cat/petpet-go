@@ -1,7 +1,7 @@
 package test
 
 import (
-	"fmt"
+	"bytes"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"io"
@@ -10,45 +10,61 @@ import (
 )
 
 func Test(t *testing.T) {
-	source, err := os.Open("tasica.png")
+	rawSource, err := os.Open("tasica.png")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func(source *os.File) {
-		err := source.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(source)
+	defer rawSource.Close()
 
-	output, err := os.Create("output.gif")
+	source, err := io.ReadAll(rawSource)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer func(output *os.File) {
-		err := output.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(output)
 
-	t.Run("Add task", func(t *testing.T) {
-		result, err := petpet.MakeGif(source, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+	t.Run("Generate Gif", func(t *testing.T) {
+		t.Parallel()
+
+		output, err := os.Create("output.gif")
 		if err != nil {
-			fmt.Println(err)
+			t.Fatal(err)
+		}
+		defer output.Close()
+
+		err = petpet.MakeGif(bytes.NewReader(source), output, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+		if err != nil {
 			t.Fatal("Error:", err)
 		}
+	})
 
-		data, err := io.ReadAll(result)
+	t.Run("Generate apng", func(t *testing.T) {
+		t.Parallel()
+
+		output, err := os.Create("output.apng")
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatal(err)
 		}
+		defer output.Close()
 
-		_, err = output.Write(data)
+		err = petpet.MakeAPNG(bytes.NewReader(source), output, petpet.DefaultConfig)
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatal("Error:", err)
+		}
+	})
+
+	t.Run("Generate faster apng", func(t *testing.T) {
+		t.Parallel()
+
+		output, err := os.Create("output_fast.apng")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer output.Close()
+
+		config := petpet.DefaultConfig
+		config.Delay = 2
+		err = petpet.MakeAPNG(bytes.NewReader(source), output, config)
+		if err != nil {
+			t.Fatal("Error:", err)
 		}
 	})
 }

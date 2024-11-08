@@ -1,21 +1,21 @@
-package ds
+package utils
 
 import (
 	"strconv"
 	"strings"
 )
 
-func parseDelay(value string) (int, error) {
+func ParseDelay(value string) (int, error) {
 	value = strings.TrimSpace(value)
 	switch value {
 	case "":
-		return 2, nil
+		return 3, nil
 	default:
 		return strconv.Atoi(value)
 	}
 }
 
-func parseError(err error) (string, string) {
+func ParseError(err error) (string, string) {
 	switch {
 	case strings.Contains(err.Error(), "10013"):
 		return "Not Found", "User not found"

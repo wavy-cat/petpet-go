@@ -12,28 +12,26 @@ import (
 	"strings"
 )
 
-type GIFService interface {
-	GetOrGenerateGif(ctx context.Context, userId, source string, delay int) ([]byte, error)
+type APNGService interface {
+	GetOrGenerateAPNG(ctx context.Context, userId, source string, delay int) ([]byte, error)
 }
 
-type gifService struct {
+type apngService struct {
 	config    petpet.Config
-	quantizer petpet.Quantizer
 	cache     cache.BytesCache
 	providers map[string]repository.AvatarProvider
 }
 
-func NewGIFService(cache cache.BytesCache, providers map[string]repository.AvatarProvider,
-	config petpet.Config, quantizer petpet.Quantizer) GIFService {
-	return &gifService{
+func NewAPngService(cache cache.BytesCache, providers map[string]repository.AvatarProvider,
+	config petpet.Config) APNGService {
+	return &apngService{
 		config:    config,
-		quantizer: quantizer,
 		cache:     cache,
 		providers: providers,
 	}
 }
 
-func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string, delay int) ([]byte, error) {
+func (g apngService) GetOrGenerateAPNG(ctx context.Context, userId, source string, delay int) ([]byte, error) {
 	if strings.ToLower(userId) == "user_id" {
 		return nil, errors.New("replace user_id in the URL with real Discord user ID 😉")
 	}
@@ -79,7 +77,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 
 	var buf bytes.Buffer
 	defer buf.Reset()
-	err = petpet.MakeGif(avatarReader, &buf, config, g.quantizer)
+	err = petpet.MakeAPNG(avatarReader, &buf, config)
 	if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,3 @@
 # petpet
 
-Библиотека для генерации pet-pet гифки.
+A library for generating pet-pet gifs.

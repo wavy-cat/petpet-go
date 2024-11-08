@@ -11,5 +11,6 @@ require (
 
 require (
 	github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88 // indirect
+	github.com/kettek/apng v0.0.0-20220823221153-ff692776a607 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 )

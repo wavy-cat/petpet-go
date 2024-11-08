@@ -1,38 +1,14 @@
 package petpet
 
 import (
-	"bytes"
 	"errors"
-	"github.com/nfnt/resize"
 	"image"
 	"image/color"
 	"image/draw"
-	"image/gif"
 	"image/png"
 	"io"
 	"sync"
 )
-
-func exportGIF(images []*image.Paletted, delays []int, disposals []byte) (bytes.Buffer, error) {
-	var buf bytes.Buffer
-	g := &gif.GIF{
-		Image:     images,
-		Delay:     delays,
-		LoopCount: 0,
-		Disposal:  disposals,
-	}
-
-	err := gif.EncodeAll(&buf, g)
-	if err != nil {
-		return buf, err
-	}
-
-	return buf, nil
-}
-
-func resizeImage(img image.Image, newWidth, newHeight int) image.Image {
-	return resize.Resize(uint(newWidth), uint(newHeight), img, resize.Lanczos3)
-}
 
 // Создаёт палитру цветов на основе переданных изображений.
 // Сумма цветов всех изображений не должна превышать 256 с `addTransparent` в значении false
@@ -69,10 +45,10 @@ func pasteImage(dest *image.Paletted, src image.Image, offsetX, offsetY int) {
 
 // MakeGif генерирует pet-pet гифку.
 // `source` должен быть типом io.Reader и содержать PNG изображение.
-func MakeGif(source io.Reader, config Config, quantizer Quantizer) (io.Reader, error) {
+func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) error {
 	baseImg, err := png.Decode(source)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var (
@@ -103,7 +79,7 @@ func MakeGif(source io.Reader, config Config, quantizer Quantizer) (io.Reader, e
 				ColorCount: 15,
 			}}...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var wg sync.WaitGroup
@@ -140,10 +116,5 @@ func MakeGif(source io.Reader, config Config, quantizer Quantizer) (io.Reader, e
 
 	wg.Wait()
 
-	data, err := exportGIF(images, delays, disposals)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data, nil
+	return exportGIF(w, images, delays, disposals)
 }

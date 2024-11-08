@@ -1,8 +1,9 @@
-package ds
+package ds_apng
 
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/answer"
 	"go.uber.org/zap"
@@ -10,11 +11,11 @@ import (
 )
 
 type Handler struct {
-	gifService service.GIFService
+	apngService service.APNGService
 }
 
-func NewHandler(gifService service.GIFService) *Handler {
-	return &Handler{gifService: gifService}
+func NewHandler(apngService service.APNGService) *Handler {
+	return &Handler{apngService: apngService}
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +32,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting delay
-	delay, err := parseDelay(r.URL.Query().Get("delay"))
+	delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 	if err != nil {
 		if _, err := answer.RespondHTMLError(w, "Incorrect delay", err.Error()); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
@@ -51,9 +52,9 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Calling the service to generate GIF
 	ctx := context.WithValue(context.Background(), "logger", logger)
-	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, "discord", delay)
+	gif, err := h.apngService.GetOrGenerateAPNG(ctx, userId, "discord", delay)
 	if err != nil {
-		title, description := parseError(err)
+		title, description := utils.ParseError(err)
 		if _, err := answer.RespondHTMLError(w, title, description); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
@@ -61,7 +62,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Setting Content-Type
-	w.Header().Set("Content-Type", "image/gif")
+	w.Header().Set("Content-Type", "image/apng")
 
 	// Returning the result
 	_, err = w.Write(gif)
