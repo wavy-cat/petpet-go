@@ -54,6 +54,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(context.Background(), "logger", logger)
 	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, "discord", delay)
 	if err != nil {
+		logger.Warn("Error during GIF generation", zap.Error(err))
 		title, description := utils.ParseError(err)
 		if _, err := answer.RespondHTMLError(w, title, description); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
