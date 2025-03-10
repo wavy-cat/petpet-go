@@ -1,4 +1,4 @@
-FROM golang:1.23.3-alpine AS builder
+FROM golang:1.24.1-alpine AS builder
 
 WORKDIR /src/app
 
@@ -17,6 +17,7 @@ LABEL authors="wavycat"
 WORKDIR /app
 COPY --from=builder /src/app /app
 
-EXPOSE 80
+# Only for Docker Desktop
+EXPOSE 3000
 
 ENTRYPOINT ["./petpet"]
