@@ -38,27 +38,33 @@ func main() {
 		}
 	}(logger)
 
+	// Get config
+	cfg, err := config.GetConfig()
+	if err != nil {
+		logger.Fatal("Failed to load config", zap.Error(err))
+	}
+
 	// Create a cache object
 	var cachePNG, cacheGIF cache.BytesCache
 
-	switch config.CacheStorage {
+	switch cfg.Storage {
 	case "memory":
-		cacheGIF, err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		cacheGIF, err = memory.NewLRUCache(cfg.MemoryCapacity)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
 
-		cachePNG, err = memory.NewLRUCache(config.CacheMemoryCapacity)
+		cachePNG, err = memory.NewLRUCache(cfg.MemoryCapacity)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
 	case "fs":
-		cacheGIF, err = fs.NewFileSystemCache(config.CacheFSPath)
+		cacheGIF, err = fs.NewFileSystemCache(cfg.FSPath)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
 
-		cachePNG, err = fs.NewFileSystemCache(config.CacheFSPath)
+		cachePNG, err = fs.NewFileSystemCache(cfg.FSPath)
 		if err != nil {
 			logger.Fatal("Error creating memory cache object", zap.Error(err))
 		}
@@ -68,7 +74,7 @@ func main() {
 	}
 
 	// Create a bot object
-	discordBot := discord.NewBot(config.BotToken)
+	discordBot := discord.NewBot(cfg.BotToken)
 
 	// Setting up the service
 	providers := map[string]repository.AvatarProvider{
@@ -102,8 +108,9 @@ func main() {
 	}).Methods(http.MethodGet, http.MethodHead)
 
 	// Set up the server
+	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
-		Addr:    config.HTTPAddress,
+		Addr:    serverAddr,
 		Handler: router,
 	}
 
@@ -112,7 +119,7 @@ func main() {
 
 	// Start the server
 	go func() {
-		logger.Info("Starting the HTTP server...", zap.String("Address", config.HTTPAddress))
+		logger.Info("Starting the HTTP server...", zap.String("Address", serverAddr))
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal("Server failed:", zap.Error(err))
 		}
@@ -122,7 +129,7 @@ func main() {
 	<-stop
 
 	// Create a context with a timeout to shut down the server gracefully.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.ShutdownTimeout)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(cfg.ShutdownTimeout)*time.Millisecond)
 	defer cancel()
 
 	logger.Info("Shutting down the server...")
