@@ -4,9 +4,16 @@ A web service for generating petpet GIFs based on a Discord user's avatar.
 
 ## Getting started
 
-* Docker
+* Docker (Container Registry)
 
 ```bash
+docker run ghcr.io/wavy-cat/petpet-go
+```
+
+* Docker (Local)
+
+```bash
+docker build . -t ghcr.io/wavy-cat/petpet-go
 docker run ghcr.io/wavy-cat/petpet-go
 ```
 
