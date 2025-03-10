@@ -8,7 +8,7 @@ import (
 
 type Server struct {
 	Host            string `yaml:"host" env:"HOST"`
-	Port            uint16 `yaml:"port" env:"PORT" env-default:"80"`
+	Port            uint16 `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
 }
 
@@ -17,8 +17,8 @@ type Discord struct {
 }
 
 type Cache struct {
-	Storage        string `yaml:"cacheStorage" env:"CACHE_STORAGE"`
-	MemoryCapacity uint   `yaml:"cacheMemoryCapacity" env:"CACHE_MEMORY_CAPACITY" env-default:"100"`
+	Storage        string `yaml:"storage" env:"CACHE_STORAGE"`
+	MemoryCapacity uint   `yaml:"memoryCapacity" env:"CACHE_MEMORY_CAPACITY" env-default:"100"`
 	FSPath         string `yaml:"fsPath" env:"CACHE_FS_PATH" env-default:"./cache"`
 }
 
