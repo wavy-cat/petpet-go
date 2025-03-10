@@ -1,49 +1,44 @@
 package config
 
 import (
-	"os"
-	"strconv"
+	"errors"
+	"github.com/ilyakaznacheev/cleanenv"
+	"io/fs"
 )
 
-var (
-	HTTPAddress         = ":80"     // Address where the server will run
-	ShutdownTimeout     = 5000      // Time in milliseconds for correct server shutdown
-	BotToken            string      // Secret authorization token
-	CacheStorage        string      // The storage type used for caching images
-	CacheMemoryCapacity = 100       // The memory storage capacity
-	CacheFSPath         = "./cache" // The path to the directory used for a file system-based cache storage.
-)
+type Server struct {
+	Host            string `yaml:"host" env:"HOST"`
+	Port            uint16 `yaml:"port" env:"PORT" env-default:"3000"`
+	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
+}
 
-func init() {
-	var err error
+type Discord struct {
+	BotToken string `yaml:"botToken" env:"BOT_TOKEN" env-required:"true"`
+}
 
-	if env := os.Getenv("ADDRESS"); env != "" {
-		HTTPAddress = env
-	} else if env := os.Getenv("PORT"); env != "" {
-		HTTPAddress = ":" + env
+type Cache struct {
+	Storage        string `yaml:"storage" env:"CACHE_STORAGE"`
+	MemoryCapacity uint   `yaml:"memoryCapacity" env:"CACHE_MEMORY_CAPACITY" env-default:"100"`
+	FSPath         string `yaml:"fsPath" env:"CACHE_FS_PATH" env-default:"./cache"`
+}
+
+type Config struct {
+	Server
+	Discord
+	Cache
+}
+
+func GetConfig() (Config, error) {
+	var cfg Config
+	var pathError *fs.PathError
+
+	err := cleanenv.ReadConfig("config.yml", &cfg)
+	if errors.As(err, &pathError) {
+		err = cleanenv.ReadEnv(&cfg)
+	}
+	if err != nil {
+		return Config{}, err
 	}
 
-	if env := os.Getenv("SHUTDOWN_TIMEOUT"); env != "" {
-		ShutdownTimeout, err = strconv.Atoi(env)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if BotToken = os.Getenv("BOT_TOKEN"); BotToken == "" {
-		panic("BOT_TOKEN required variable")
-	}
-
-	CacheStorage = os.Getenv("CACHE_STORAGE")
-
-	if env := os.Getenv("CACHE_MEMORY_CAPACITY"); env != "" {
-		CacheMemoryCapacity, err = strconv.Atoi(env)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	if env := os.Getenv("CACHE_FS_PATH"); env != "" {
-		CacheFSPath = env
-	}
+	return cfg, nil
 }

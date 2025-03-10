@@ -12,13 +12,13 @@ type entry struct {
 }
 
 type LRUCache struct {
-	capacity int
+	capacity uint
 	cache    map[string]*list.Element
 	ll       *list.List
 	mu       sync.Mutex
 }
 
-func NewLRUCache(capacity int) (*LRUCache, error) {
+func NewLRUCache(capacity uint) (*LRUCache, error) {
 	if capacity <= 0 {
 		return nil, errors.New("invalid cache capacity")
 	}
@@ -45,7 +45,7 @@ func (l *LRUCache) Push(key string, value []byte) error {
 	l.cache[key] = el
 
 	// If the cache exceeds its capacity, remove the least recently used item.
-	if l.ll.Len() > l.capacity {
+	if uint(l.ll.Len()) > l.capacity {
 		l.removeOldest()
 	}
 	return nil
