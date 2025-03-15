@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-go@v5
 
       - name: Run go test
-        run: go test github.com/wavy-cat/petpet-go/cmd/app
+        run: go test ./...
 
   build:
     name: "Build and Push"
@@ -62,8 +62,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./Dockerfile
           push: true
-          tags: |
-            ghcr.io/wavy-cat/petpet-go:latest
-            ghcr.io/wavy-cat/petpet-go:${{ github.sha }}
+          tags: ghcr.io/wavy-cat/petpet-go:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
