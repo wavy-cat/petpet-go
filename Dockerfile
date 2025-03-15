@@ -9,9 +9,6 @@ COPY go* .
 RUN go mod download
 
 COPY . .
-RUN go vet -v github.com/wavy-cat/petpet-go/cmd/app
-RUN go test -v github.com/wavy-cat/petpet-go/cmd/app
-
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o server github.com/wavy-cat/petpet-go/cmd/app
 
 FROM gcr.io/distroless/static-debian12

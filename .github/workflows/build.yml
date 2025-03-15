@@ -6,8 +6,36 @@ on:
       - master
 
 jobs:
-  build:
+  vet:
+    name: "go vet"
     runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Run go vet
+        run: go vet github.com/wavy-cat/petpet-go/cmd/app
+
+  test:
+    name: "go test"
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Run go test
+        run: go test github.com/wavy-cat/petpet-go/cmd/app
+
+  build:
+    name: "Build and Push"
+    runs-on: ubuntu-24.04-arm
+    needs: [ vet, test ]
     permissions:
       packages: write
       contents: read
