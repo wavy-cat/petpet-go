@@ -35,3 +35,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ghcr.io/wavy-cat/petpet-go:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
