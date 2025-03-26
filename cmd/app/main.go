@@ -19,6 +19,7 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -73,6 +74,19 @@ func main() {
 		logger.Warn("Passed an incorrect storage type for the cache. The cache will be disabled")
 	}
 
+	// Add proxy
+	var transport *http.Transport
+
+	if cfg.URL != "" {
+		proxyURL, err := url.Parse(cfg.URL)
+		if err != nil {
+			logger.Warn("Failed to parse proxy URL. The server will be started without using a proxy",
+				zap.Error(err))
+		} else {
+			transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+		}
+	}
+
 	// Create a bot object
 	discordBot := discord.NewBot(cfg.BotToken)
 
@@ -88,13 +102,13 @@ func main() {
 
 	gifHandle := middleware.Logging{
 		Logger: logger,
-		Next:   ds_gif.NewHandler(gifService),
+		Next:   ds_gif.NewHandler(gifService, transport),
 	}
 	router.Handle("/ds/{user_id}.gif", &gifHandle).Methods(http.MethodGet)
 
 	apngHandle := middleware.Logging{
 		Logger: logger,
-		Next:   ds_apng.NewHandler(apngService),
+		Next:   ds_apng.NewHandler(apngService, transport),
 	}
 	router.Handle("/ds/{user_id}.apng", &apngHandle).Methods(http.MethodGet)
 

@@ -27,6 +27,12 @@ func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
 	}
 
 	client := &http.Client{}
+
+	transport, ok := ctx.Value("transport").(*http.Transport)
+	if ok && transport != nil {
+		client.Transport = transport
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

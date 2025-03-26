@@ -27,6 +27,12 @@ func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 	req.Header.Set("Authorization", "Bot "+b.token)
 
 	client := &http.Client{}
+
+	transport, ok := ctx.Value("transport").(*http.Transport)
+	if ok && transport != nil {
+		client.Transport = transport
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

@@ -12,6 +12,10 @@ type Server struct {
 	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
 }
 
+type Proxy struct {
+	URL string `yaml:"url" env:"PROXY_URL"`
+}
+
 type Discord struct {
 	BotToken string `yaml:"botToken" env:"BOT_TOKEN" env-required:"true"`
 }
@@ -26,6 +30,7 @@ type Config struct {
 	Server
 	Discord
 	Cache
+	Proxy
 }
 
 func GetConfig() (Config, error) {

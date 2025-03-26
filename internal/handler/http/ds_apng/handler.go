@@ -12,10 +12,14 @@ import (
 
 type Handler struct {
 	apngService service.APNGService
+	transport   *http.Transport
 }
 
-func NewHandler(apngService service.APNGService) *Handler {
-	return &Handler{apngService: apngService}
+func NewHandler(apngService service.APNGService, transport *http.Transport) *Handler {
+	return &Handler{
+		apngService: apngService,
+		transport:   transport,
+	}
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +56,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Calling the service to generate GIF
 	ctx := context.WithValue(context.Background(), "logger", logger)
+	ctx = context.WithValue(ctx, "transport", h.transport)
 	gif, err := h.apngService.GetOrGenerateAPNG(ctx, userId, "discord", delay)
 	if err != nil {
 		logger.Warn("Error during APNG generation", zap.Error(err))

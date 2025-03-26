@@ -12,10 +12,14 @@ import (
 
 type Handler struct {
 	gifService service.GIFService
+	transport  *http.Transport
 }
 
-func NewHandler(gifService service.GIFService) *Handler {
-	return &Handler{gifService: gifService}
+func NewHandler(gifService service.GIFService, transport *http.Transport) *Handler {
+	return &Handler{
+		gifService: gifService,
+		transport:  transport,
+	}
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +56,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Calling the service to generate GIF
 	ctx := context.WithValue(context.Background(), "logger", logger)
+	ctx = context.WithValue(ctx, "transport", h.transport)
 	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, "discord", delay)
 	if err != nil {
 		logger.Warn("Error during GIF generation", zap.Error(err))
