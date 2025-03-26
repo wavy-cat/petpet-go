@@ -1,6 +1,6 @@
 module github.com/wavy-cat/petpet-go
 
-go 1.24.1
+go 1.24
 
 require (
 	github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e
