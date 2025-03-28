@@ -40,7 +40,7 @@ func main() {
 	}(logger)
 
 	// Get config
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetConfig("config.yml")
 	if err != nil {
 		logger.Fatal("Failed to load config", zap.Error(err))
 	}

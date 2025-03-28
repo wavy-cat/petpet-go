@@ -33,13 +33,22 @@ type Config struct {
 	Proxy
 }
 
-func GetConfig() (Config, error) {
+func GetYMLConfig(path string) (Config, error) {
 	var cfg Config
+	return cfg, cleanenv.ReadConfig(path, &cfg)
+}
+
+func GetEnvConfig() (Config, error) {
+	var cfg Config
+	return cfg, cleanenv.ReadEnv(&cfg)
+}
+
+func GetConfig(path string) (Config, error) {
 	var pathError *fs.PathError
 
-	err := cleanenv.ReadConfig("config.yml", &cfg)
+	cfg, err := GetYMLConfig(path)
 	if errors.As(err, &pathError) {
-		err = cleanenv.ReadEnv(&cfg)
+		cfg, err = GetEnvConfig()
 	}
 	if err != nil {
 		return Config{}, err
