@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_apng"
@@ -18,12 +25,6 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
-	"net/http"
-	"net/url"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -100,22 +101,21 @@ func main() {
 	// Set up routing
 	router := mux.NewRouter()
 
-	gifHandle := middleware.Logging{
+	gifHandler := &middleware.Logging{
 		Logger: logger,
 		Next:   ds_gif.NewHandler(gifService, transport),
 	}
-	router.Handle("/ds/{user_id}.gif", &gifHandle).Methods(http.MethodGet)
+	router.Handle("/ds/{user_id}.gif", gifHandler).Methods(http.MethodGet)
+	router.Handle("/ds/{user_id}", gifHandler).Methods(http.MethodGet)
 
-	apngHandle := middleware.Logging{
+	apngHandler := &middleware.Logging{
 		Logger: logger,
 		Next:   ds_apng.NewHandler(apngService, transport),
 	}
-	router.Handle("/ds/{user_id}.apng", &apngHandle).Methods(http.MethodGet)
-
-	router.Handle("/ds/{user_id}", &gifHandle).Methods(http.MethodGet)
+	router.Handle("/ds/{user_id}.apng", apngHandler).Methods(http.MethodGet)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		_, err := w.Write([]byte("Waiting for something to happen?"))
+		_, err := w.Write([]byte("See documentation on GitHub: https://github.com/wavy-cat/petpet-go"))
 		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
