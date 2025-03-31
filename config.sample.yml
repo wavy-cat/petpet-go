@@ -1,0 +1,54 @@
+server:
+  # The address where the server will run.
+  # `HOST` in env
+  host: "localhost"
+  # The port where the server will run.
+  # `PORT` in env. Range 0-65535 (uint16). Default is 3000
+  port: 3000
+  # Timeout in milliseconds for graceful shutdown
+  # `SHUTDOWN_TIMEOUT` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 5000
+  shutdownTimeout: 5000
+  # Endpoint like /ping for load balancers or uptime bots
+  # Read more: https://go-chi.io/#/pages/middleware?id=heartbeat
+  heartbeat:
+    # `HEARTBEAT_ENABLE` in env. Default is false
+    enable: false
+    # `HEARTBEAT_PATH` in env. Default is `/ping`
+    path: "/ping"
+  # Throttle limits the number of requests that can be processed simultaneously
+  # and establishes a queue of requests
+  throttle:
+    # `THROTTLE_ENABLE` in env. Default is false
+    enable: false
+    # Number of requests that can be processed simultaneously.
+    # The optimal value is calculated by the formula: number of processor threads * 2.
+    # `THROTTLE_LIMIT` in env. Required parameter!
+    limit: 2
+    # Queue size for requests.
+    # `THROTTLE_BACKLOG` in env. Default is 3
+    backlog: 3
+    # Number of seconds requests can stay in the queue.
+    # `THROTTLE_BACKLOG_TIMEOUT` in env. Default is 5
+    backlogTimeout: 5
+discord:
+  # Secret token for Discord bot.
+  # You can create a bot on the Discord Developer Portal:
+  # https://discord.com/developers/applications
+  # `BOT_TOKEN` in env. Required parameter!
+  botToken: "your bot token"
+# The cache is used to store previously generated GIFs instead of re-generating them.
+# Disabled by default
+cache:
+  # Cache storage location. Must be either `fs` (on disk) or `memory` (in memory) or nothing.
+  # `CACHE_STORAGE` in env. Default is nothing
+  storage: "fs"
+  # If the storage type "memory" is used, this parameter sets the cache capacity.
+  # `CACHE_MEMORY_CAPACITY` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 100
+  memoryCapacity: 100
+  # If the storage type "fs" is used, this parameter sets the directory where the cache will be stored.
+  # `CACHE_FS_PATH` in env. Default is `./cache`
+  fsPath: "./cache"
+proxy:
+  # Proxy URL to send Discord requests to.
+  # `PROXY_URL` in env
+  url: "http://127.0.0.1:10808"
