@@ -11,11 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_apng"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
-	"github.com/wavy-cat/petpet-go/internal/middleware"
+	middleware2 "github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
@@ -99,27 +100,29 @@ func main() {
 	apngService := service.NewAPngService(cachePNG, providers, petpet.DefaultConfig)
 
 	// Set up routing
-	router := mux.NewRouter()
+	r := chi.NewRouter()
 
-	gifHandler := &middleware.Logging{
-		Logger: logger,
-		Next:   ds_gif.NewHandler(gifService, transport),
+	r.Use(middleware2.RequestLogger(logger, "petpet"))
+	if cfg.Heartbeat.Enable {
+		r.Use(middleware.Heartbeat(cfg.Heartbeat.Path))
 	}
-	router.Handle("/ds/{user_id}.gif", gifHandler).Methods(http.MethodGet)
-	router.Handle("/ds/{user_id}", gifHandler).Methods(http.MethodGet)
 
-	apngHandler := &middleware.Logging{
-		Logger: logger,
-		Next:   ds_apng.NewHandler(apngService, transport),
-	}
-	router.Handle("/ds/{user_id}.apng", apngHandler).Methods(http.MethodGet)
+	gifHandler := ds_gif.NewHandler(gifService, transport)
+	r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
+	r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
 
-	router.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+	apngHandler := ds_apng.NewHandler(apngService, transport)
+	r.Method(http.MethodGet, "/ds/{user_id}.apng", apngHandler)
+
+	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte("See documentation on GitHub: https://github.com/wavy-cat/petpet-go"))
 		if err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
-	}).Methods(http.MethodGet, http.MethodHead)
+	})
+	r.Head("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
@@ -128,7 +131,7 @@ func main() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      router,
+		Handler:      r,
 	}
 
 	stop := make(chan os.Signal, 1)

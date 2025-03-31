@@ -2,25 +2,34 @@ package middleware
 
 import (
 	"context"
-	"go.uber.org/zap"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
-type Logging struct {
-	Logger *zap.Logger
-	Next   http.Handler
-}
+func RequestLogger(logger *zap.Logger, service string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requestId := uuid.New()
+			r = r.WithContext(context.WithValue(r.Context(), "logger", logger))
+			r = r.WithContext(context.WithValue(r.Context(), "requestId", requestId))
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
-func (mw *Logging) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
+			ww.Header().Add("X-RequestID", requestId.String())
 
-	r = r.WithContext(context.WithValue(r.Context(), "logger", mw.Logger))
-	mw.Next.ServeHTTP(w, r)
+			t1 := time.Now()
+			defer func() {
+				logger.Info("HTTP request",
+					zap.String("service", service),
+					zap.Dict("request", zap.String("url", r.URL.String()), zap.String("method", r.Method), zap.String("proto", r.Proto), zap.String("requestId", requestId.String()), zap.String("userAgent", r.UserAgent())),
+					zap.Dict("response", zap.Int("status", ww.Status()), zap.Int("contentLength", ww.BytesWritten()), zap.Duration("elapsed", time.Since(t1))),
+				)
+			}()
 
-	duration := time.Since(start)
-	mw.Logger.Info("HTTP request",
-		zap.String("path", r.URL.Path),
-		zap.Duration("duration", duration),
-	)
+			next.ServeHTTP(ww, r)
+		})
+	}
 }

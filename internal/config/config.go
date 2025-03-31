@@ -11,6 +11,10 @@ type Server struct {
 	Host            string `yaml:"host" env:"HOST"`
 	Port            uint16 `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
+	Heartbeat       struct {
+		Enable bool   `yaml:"enable" env:"ENABLE_HEARTBEAT" env-default:"false"`
+		Path   string `yaml:"path" env:"HEARTBEAT_PATH" env-default:"/ping"`
+	} `yaml:"heartbeat"`
 }
 
 type Proxy struct {

@@ -2,12 +2,13 @@ package ds_apng
 
 import (
 	"context"
-	"github.com/gorilla/mux"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/answer"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type Handler struct {
@@ -26,8 +27,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	logger := r.Context().Value("logger").(*zap.Logger)
 
 	// Getting the user ID
-	userId, ok := mux.Vars(r)["user_id"]
-	if !ok {
+	userId := chi.URLParam(r, "user_id")
+	if userId == "" {
 		logger.Warn("Failed to get user ID", zap.String("user_id", userId))
 		if err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, "User ID not sent"); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
