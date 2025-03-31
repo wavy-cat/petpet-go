@@ -103,16 +103,10 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware2.RequestLogger(logger, "petpet"))
+	r.Use(middleware.GetHead)
 	if cfg.Heartbeat.Enable {
 		r.Use(middleware.Heartbeat(cfg.Heartbeat.Path))
 	}
-
-	gifHandler := ds_gif.NewHandler(gifService, transport)
-	r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
-	r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
-
-	apngHandler := ds_apng.NewHandler(apngService, transport)
-	r.Method(http.MethodGet, "/ds/{user_id}.apng", apngHandler)
 
 	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte("See documentation on GitHub: https://github.com/wavy-cat/petpet-go"))
@@ -120,8 +114,21 @@ func main() {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 	})
-	r.Head("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+
+	r.Group(func(r chi.Router) {
+		if cfg.Throttle.Enable {
+			r.Use(middleware.ThrottleBacklog(
+				int(cfg.Throttle.Limit),
+				int(cfg.Throttle.Backlog),
+				time.Duration(cfg.Throttle.BacklogTimeout)*time.Second))
+		}
+
+		gifHandler := ds_gif.NewHandler(gifService, transport)
+		r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
+		r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
+
+		apngHandler := ds_apng.NewHandler(apngService, transport)
+		r.Method(http.MethodGet, "/ds/{user_id}.apng", apngHandler)
 	})
 
 	// Set up the server

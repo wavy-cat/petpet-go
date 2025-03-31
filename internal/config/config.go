@@ -15,6 +15,12 @@ type Server struct {
 		Enable bool   `yaml:"enable" env:"ENABLE_HEARTBEAT" env-default:"false"`
 		Path   string `yaml:"path" env:"HEARTBEAT_PATH" env-default:"/ping"`
 	} `yaml:"heartbeat"`
+	Throttle struct {
+		Enable         bool `yaml:"enable" env:"ENABLE_THROTTLE" env-default:"false"`
+		Limit          uint `yaml:"limit" env:"THROTTLE_LIMIT" env-required:"true"`
+		Backlog        uint `yaml:"backlog" env:"THROTTLE_BACKLOG" env-default:"3"`
+		BacklogTimeout uint `yaml:"backlog_timeout" env:"THROTTLE_BACKLOG_TIMEOUT" env-default:"5"` // in secs
+	} `yaml:"throttle"`
 }
 
 type Proxy struct {
