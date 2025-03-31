@@ -124,8 +124,11 @@ func main() {
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
-		Addr:    serverAddr,
-		Handler: router,
+		Addr:         serverAddr,
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      router,
 	}
 
 	stop := make(chan os.Signal, 1)
