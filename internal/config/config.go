@@ -2,14 +2,16 @@ package config
 
 import (
 	"errors"
-	"github.com/ilyakaznacheev/cleanenv"
 	"io/fs"
+
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Server struct {
 	Host            string `yaml:"host" env:"HOST"`
 	Port            uint16 `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
+	AllowDomain     string `yaml:"allow_domain" env:"ALLOW_DOMAIN"`
 }
 
 type Proxy struct {
