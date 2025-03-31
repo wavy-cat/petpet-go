@@ -11,7 +11,6 @@ type Server struct {
 	Host            string `yaml:"host" env:"HOST"`
 	Port            uint16 `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
-	AllowDomain     string `yaml:"allowDomain" env:"ALLOW_DOMAIN"`
 }
 
 type Proxy struct {

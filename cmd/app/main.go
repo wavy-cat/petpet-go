@@ -121,10 +121,6 @@ func main() {
 		}
 	}).Methods(http.MethodGet, http.MethodHead)
 
-	if cfg.AllowDomain != "" {
-		router.Host(cfg.AllowDomain)
-	}
-
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
