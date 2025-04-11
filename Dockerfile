@@ -19,7 +19,7 @@ LABEL org.opencontainers.image.source="https://github.com/wavy-cat/petpet-go"
 WORKDIR /app
 COPY --from=builder /src/app /app
 
-USER 1002
+USER nonroot
 
 # Only for Docker Desktop
 EXPOSE 3000
