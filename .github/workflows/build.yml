@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+      - 'docker-compose.yml'
+      - 'config.sample.yml'
+      - '.vscode'
+
+env:
+  GO_VERSION: 1.24.1
 
 jobs:
   vet:
@@ -16,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24.1
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Run go vet
         run: go vet github.com/wavy-cat/petpet-go/cmd/app
@@ -31,13 +41,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24.1
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Run go test
         run: go test ./...
 
-  build:
-    name: "Build and Push"
+  build-docker:
+    name: "Build and Push Docker Image"
     runs-on: ubuntu-24.04-arm
     needs: [ vet, test ]
     permissions:
@@ -69,3 +79,40 @@ jobs:
           tags: ghcr.io/wavy-cat/petpet-go:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  
+  build-exe:
+    name: "Compile the binaries"
+    runs-on: ubuntu-24.04-arm
+    needs: [ vet, test ]
+    strategy:
+      matrix:
+        os: [linux, windows, darwin]
+        arch: ['386', amd64, arm, arm64]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        if: (matrix.arch != '386' || matrix.arch != 'arm') && matrix.os != 'darwin'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      
+      - name: Build
+        if: (matrix.arch != '386' || matrix.arch != 'arm') && matrix.os != 'darwin'
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          output_name="bin/petpet-$GOOS-$GOARCH"
+          if [ "$GOOS" = "windows" ]; then
+            output_name="$output_name.exe"
+          fi
+          go build -v -trimpath -ldflags="-s -w" -o "$output_name" github.com/wavy-cat/petpet-go/cmd/app
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: bin/
