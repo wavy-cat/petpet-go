@@ -5,11 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/wavy-cat/petpet-go/internal/repository"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"go.uber.org/zap"
-	"strings"
 )
 
 type GIFService interface {
@@ -34,10 +34,6 @@ func NewGIFService(cache cache.BytesCache, providers map[string]repository.Avata
 }
 
 func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string, delay int) ([]byte, error) {
-	if strings.ToLower(userId) == "user_id" {
-		return nil, errors.New("replace user_id in the URL with real Discord user ID 😉")
-	}
-
 	// Getting the required provider
 	provider, ok := g.providers[source]
 	if !ok {

@@ -3,11 +3,12 @@ package ds_apng
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/service"
-	"github.com/wavy-cat/petpet-go/pkg/answer"
+	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
 )
 
@@ -30,7 +31,14 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	userId := chi.URLParam(r, "user_id")
 	if userId == "" {
 		logger.Warn("Failed to get user ID", zap.String("user_id", userId))
-		if err := answer.RespondWithErrorMessage(w, http.StatusBadRequest, "User ID not sent"); err != nil {
+		if err := responses.RespondSoftError(w, "No user ID was specified"); err != nil {
+			logger.Error("Error sending response", zap.Error(err))
+		}
+		return
+	}
+
+	if strings.ToLower(userId) == "user_id" {
+		if err := responses.RespondSoftError(w, "Replace `user_id` in the URL with real Discord user ID 😉"); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
@@ -39,7 +47,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Getting delay
 	delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 	if err != nil {
-		if _, err := answer.RespondHTMLError(w, "Incorrect delay", err.Error()); err != nil {
+		if err := responses.RespondSoftError(w, "Incorrect delay"); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
@@ -61,18 +69,16 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	gif, err := h.apngService.GetOrGenerateAPNG(ctx, userId, "discord", delay)
 	if err != nil {
 		logger.Warn("Error during APNG generation", zap.Error(err))
-		title, description := utils.ParseError(err)
-		if _, err := answer.RespondHTMLError(w, title, description); err != nil {
+
+		errDetails := utils.ParseDiscordError(err)
+		if err := responses.RespondSoftError(w, errDetails); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
 	}
 
-	// Setting Content-Type
-	w.Header().Set("Content-Type", "image/apng")
-
 	// Returning the result
-	_, err = w.Write(gif)
+	_, err = responses.RespondContent(w, "image/gif", gif)
 	if err != nil {
 		logger.Error("Error sending response", zap.Error(err))
 	}

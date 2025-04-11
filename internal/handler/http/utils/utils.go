@@ -15,13 +15,13 @@ func ParseDelay(value string) (int, error) {
 	}
 }
 
-func ParseError(err error) (string, string) {
+func ParseDiscordError(err error) string {
 	switch {
 	case strings.Contains(err.Error(), "10013"):
-		return "Not Found", "User not found"
+		return "User not found"
 	case strings.Contains(err.Error(), "50035"):
-		return "Incorrect ID", "Check your ID for correctness"
+		return "Incorrect user ID. Check ID for correctness"
 	}
 
-	return "Unknown Error", "Something went wrong"
+	return "Something went wrong"
 }
