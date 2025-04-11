@@ -21,6 +21,8 @@ func ParseDiscordError(err error) string {
 		return "User not found"
 	case strings.Contains(err.Error(), "50035"):
 		return "Incorrect user ID. Check ID for correctness"
+	case strings.Contains(err.Error(), "get avatar error: not exists"):
+		return "User has no avatar"
 	}
 
 	return "Something went wrong"

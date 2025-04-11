@@ -43,7 +43,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 	// Getting the user's avatar id
 	avatarId, err := provider.GetAvatarId(ctx, userId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get avatar error: %v", err)
 	}
 
 	// We check if the GIF is in the cache and if so, return it.
