@@ -2,11 +2,12 @@ package test
 
 import (
 	"bytes"
-	"github.com/wavy-cat/petpet-go/pkg/petpet"
-	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"io"
 	"os"
 	"testing"
+
+	"github.com/wavy-cat/petpet-go/pkg/petpet"
+	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 )
 
 func TestGIF(t *testing.T) {
@@ -36,7 +37,7 @@ func TestGIF(t *testing.T) {
 
 		err := petpet.MakeGif(bytes.NewReader(source), &output, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
 		if err != nil {
-			t.Fatal("generation error:", err)
+			t.Fatal("MakeGIF returned error:", err)
 		}
 
 		if output.Len() != bufferLen {
@@ -55,7 +56,7 @@ func TestGIF(t *testing.T) {
 
 		err := petpet.MakeGif(bytes.NewReader(source), &output, config, quantizers.HierarhicalQuantizer{})
 		if err != nil {
-			t.Fatal("generation error:", err)
+			t.Fatal("MakeGIF returned error:", err)
 		}
 
 		if output.Len() != bufferLen {

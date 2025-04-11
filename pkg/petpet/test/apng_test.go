@@ -35,7 +35,7 @@ func TestAPNG(t *testing.T) {
 
 		err = petpet.MakeAPNG(bytes.NewReader(source), &output, petpet.DefaultConfig)
 		if err != nil {
-			t.Fatal("generation error:", err)
+			t.Fatal("MakeAPNG returned error:", err)
 		}
 
 		if output.Len() != bufferLen {
@@ -54,7 +54,7 @@ func TestAPNG(t *testing.T) {
 
 		err = petpet.MakeAPNG(bytes.NewReader(source), &output, config)
 		if err != nil {
-			t.Fatal("generation error:", err)
+			t.Fatal("MakeAPNG returned error:", err)
 		}
 
 		if output.Len() != bufferLen {
