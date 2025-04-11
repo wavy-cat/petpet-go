@@ -11,11 +11,15 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o server github.com/wavy-cat/petpet-go/cmd/app
 
-FROM gcr.io/distroless/static-debian12
-LABEL authors="wavycat"
+FROM gcr.io/distroless/static-debian12:nonroot
+
+LABEL authors="WavyCat"
+LABEL org.opencontainers.image.source="https://github.com/wavy-cat/petpet-go"
 
 WORKDIR /app
 COPY --from=builder /src/app /app
+
+USER 1002
 
 # Only for Docker Desktop
 EXPOSE 3000
