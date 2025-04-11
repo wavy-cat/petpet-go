@@ -1,0 +1,7 @@
+services:
+  petpet:
+    build: .
+    volumes:
+      - ./config.yml:/app/config.yml:ro
+    ports:
+      - "3000:3000/tcp"
