@@ -112,7 +112,7 @@ jobs:
           go build -v -trimpath -ldflags="-s -w" -o "$output_name" github.com/wavy-cat/petpet-go/cmd/app
         
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binary-${{ matrix.os }}-${{ matrix.arch }}
           path: bin/
