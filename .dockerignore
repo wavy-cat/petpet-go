@@ -1,4 +1,8 @@
 .idea
+.vscode
 .gitignore
 .github
 README.md
+LICENSE
+config.yml
+config.sample.yml
