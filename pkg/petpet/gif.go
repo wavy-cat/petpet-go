@@ -16,7 +16,7 @@ import (
 func createPalette(addTransparent bool, quantizer Quantizer, images ...colorCountedImage) (color.Palette, error) {
 	palette := make([]color.Color, 0, 256)
 	if addTransparent {
-		palette = []color.Color{color.RGBA{}}
+		palette = append(palette, color.RGBA{})
 	}
 
 	for _, val := range images {
@@ -46,11 +46,6 @@ func pasteImage(dest *image.Paletted, src image.Image, offsetX, offsetY int) {
 // MakeGif генерирует pet-pet гифку.
 // `source` должен быть типом io.Reader и содержать PNG изображение.
 func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) error {
-	baseImg, err := png.Decode(source)
-	if err != nil {
-		return err
-	}
-
 	var (
 		width    = config.Width
 		height   = config.Height
@@ -59,12 +54,16 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 	)
 	const frames = 10
 
-	baseImg = resizeImage(baseImg, width, height)
-	var (
-		images    = make([]*image.Paletted, frames)
-		delays    = make([]int, frames)
-		disposals = make([]byte, frames)
-	)
+	baseImg, err := png.Decode(source)
+	if err != nil {
+		return err
+	}
+
+	if size := baseImg.Bounds().Size(); size.X != width || size.Y != width {
+		baseImg = resizeImage(baseImg, width, height)
+	}
+
+	var images = make([]*image.Paletted, frames)
 
 	basePalette, err := createPalette(
 		true,
@@ -85,9 +84,8 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 	var wg sync.WaitGroup
 	wg.Add(frames)
 
-	for i := 0; i < frames; i++ {
+	for i := range frames {
 		go func(i int) {
-			defer wg.Done()
 			canvas := createTransparentImage(width, height, basePalette)
 
 			squeeze := float64(i)
@@ -109,9 +107,19 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 			pasteImage(canvas, petFrame, 0, 0)
 
 			images[i] = canvas
-			delays[i] = delay
-			disposals[i] = disposal
+
+			wg.Done()
 		}(i)
+	}
+
+	var (
+		delays    = make([]int, frames)
+		disposals = make([]byte, frames)
+	)
+
+	for i := range frames {
+		delays[i] = delay
+		disposals[i] = disposal
 	}
 
 	wg.Wait()

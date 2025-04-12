@@ -18,16 +18,18 @@ func MakeAPNG(source io.Reader, writer io.Writer, config Config) error {
 		return err
 	}
 
+	if size := baseImg.Bounds().Size(); size.X != config.Width || size.Y != config.Height {
+		baseImg = resizeImage(baseImg, config.Width, config.Height)
+	}
+
 	const frames = 10
-	baseImg = resizeImage(baseImg, config.Width, config.Height)
 	images := make([]*image.RGBA, frames)
 
 	var wg sync.WaitGroup
 	wg.Add(frames)
 
-	for i := 0; i < frames; i++ {
+	for i := range frames {
 		go func(i int) {
-			defer wg.Done()
 			canvas := image.NewRGBA(image.Rect(0, 0, config.Width, config.Height))
 
 			squeeze := float64(i)
@@ -49,6 +51,8 @@ func MakeAPNG(source io.Reader, writer io.Writer, config Config) error {
 			pasteImageRGBA(canvas, petFrame, 0, 0)
 
 			images[i] = canvas
+
+			wg.Done()
 		}(i)
 	}
 
