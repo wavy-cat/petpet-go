@@ -29,7 +29,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run go vet
-        run: go vet github.com/wavy-cat/petpet-go/cmd/app
+        run: go vet -v github.com/wavy-cat/petpet-go/cmd/app
 
   test:
     name: "go test"
@@ -44,7 +44,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run go test
-        run: go test ./...
+        run: go test -v ./...
 
   build-docker:
     name: "Build and Push Docker Image"
