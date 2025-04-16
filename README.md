@@ -1,6 +1,12 @@
 # petpet-go
 
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/wavy-cat/petpet-go?style=for-the-badge&logo=go&logoColor=white&labelColor=1A222E&color=242B36)
+![GitHub License](https://img.shields.io/github/license/wavy-cat/petpet-go?style=for-the-badge&labelColor=1A222E&color=242B36)
+![GitHub repo size](https://img.shields.io/github/repo-size/wavy-cat/petpet-go?style=for-the-badge&logo=github&logoColor=white&labelColor=1A222E&color=242B36&cacheSeconds=0)
+
 A web service for generating petpet GIFs (and APNG now) based on a Discord user's avatar.
+
+---
 
 ## Usage
 
@@ -53,5 +59,6 @@ Look at the [sample config](config.sample.yml) with comments (including environm
 
 ## PetPet in other languages
 
-* **Python** - [nakidai/petthecord](https://github.com/nakidai/petthecord)
-* **Rust** - [messengernew/petpet-api](https://github.com/messengernew/petpet-api)
+* **Python**: [nakidai/petthecord](https://github.com/nakidai/petthecord)
+* **Rust**: [messengernew/petpet-api](https://github.com/messengernew/petpet-api)
+* **C**: [nakidai/cptc](https://github.com/nakidai/cptc)
