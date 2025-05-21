@@ -47,7 +47,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 	}
 
 	// We check if the GIF is in the cache and if so, return it.
-	cacheName := fmt.Sprintf("%s-%d", avatarId, delay)
+	cacheName := fmt.Sprintf("%s-%d-gif", avatarId, delay)
 
 	if g.cache != nil {
 		cachedGif, err := g.cache.Pull(cacheName)
