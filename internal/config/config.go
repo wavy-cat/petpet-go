@@ -31,10 +31,27 @@ type Discord struct {
 	BotToken string `yaml:"botToken" env:"BOT_TOKEN" env-required:"true"`
 }
 
+type MemoryCacheConfig struct {
+	Capacity uint `yaml:"capacity" env:"CACHE_MEMORY_CAPACITY" env-default:"100"`
+}
+
+type FSCacheConfig struct {
+	Path string `yaml:"path" env:"CACHE_FS_PATH" env-default:"./cache"`
+}
+
+type S3CacheConfig struct {
+	Bucket    string `yaml:"bucket" env:"CACHE_S3_BUCKET"`
+	Endpoint  string `yaml:"endpoint" env:"CACHE_S3_ENDPOINT"`
+	Region    string `yaml:"region" env:"CACHE_S3_REGION" env-default:"us-east-1"`
+	AccessKey string `yaml:"accessKey" env:"CACHE_S3_ACCESS_KEY"`
+	SecretKey string `yaml:"secretKey" env:"CACHE_S3_SECRET_KEY"`
+}
+
 type Cache struct {
-	Storage        string `yaml:"storage" env:"CACHE_STORAGE"`
-	MemoryCapacity uint   `yaml:"memoryCapacity" env:"CACHE_MEMORY_CAPACITY" env-default:"100"`
-	FSPath         string `yaml:"fsPath" env:"CACHE_FS_PATH" env-default:"./cache"`
+	Storage string            `yaml:"storage" env:"CACHE_STORAGE"`
+	Memory  MemoryCacheConfig `yaml:"memory"`
+	FS      FSCacheConfig     `yaml:"fs"`
+	S3      S3CacheConfig     `yaml:"s3"`
 }
 
 type Config struct {

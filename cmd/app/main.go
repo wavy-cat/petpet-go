@@ -22,6 +22,7 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
+	"github.com/wavy-cat/petpet-go/pkg/cache/s3"
 	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
@@ -47,33 +48,32 @@ func main() {
 		logger.Fatal("Failed to load config", zap.Error(err))
 	}
 
-	// Create a cache object
-	var cachePNG, cacheGIF cache.BytesCache
+	// Create a cache instance
+	var cacheInstance cache.BytesCache
 
 	switch cfg.Storage {
 	case "memory":
-		cacheGIF, err = memory.NewLRUCache(cfg.MemoryCapacity)
+		cacheInstance, err = memory.NewLRUCache(cfg.Memory.Capacity)
 		if err != nil {
-			logger.Fatal("Error creating memory cache object", zap.Error(err))
-		}
-
-		cachePNG, err = memory.NewLRUCache(cfg.MemoryCapacity)
-		if err != nil {
-			logger.Fatal("Error creating memory cache object", zap.Error(err))
+			logger.Fatal("Error creating memory cacheInstance object", zap.Error(err))
 		}
 	case "fs":
-		cacheGIF, err = fs.NewFileSystemCache(cfg.FSPath)
+		cacheInstance, err = fs.NewFileSystemCache(cfg.FS.Path)
 		if err != nil {
-			logger.Fatal("Error creating memory cache object", zap.Error(err))
+			logger.Fatal("Error creating filesystem cacheInstance object", zap.Error(err))
+		}
+	case "s3":
+		if cfg.S3.Bucket == "" {
+			logger.Fatal("S3 bucket name is required for S3 cacheInstance")
 		}
 
-		cachePNG, err = fs.NewFileSystemCache(cfg.FSPath)
+		cacheInstance, err = s3.NewS3Cache(cfg.S3.Bucket, cfg.S3.Endpoint, cfg.S3.Region, cfg.S3.AccessKey, cfg.S3.SecretKey)
 		if err != nil {
-			logger.Fatal("Error creating memory cache object", zap.Error(err))
+			logger.Fatal("Error creating S3 cacheInstance object", zap.Error(err))
 		}
 	case "":
 	default:
-		logger.Warn("Passed an incorrect storage type for the cache. The cache will be disabled")
+		logger.Warn("Passed an incorrect storage type for the cacheInstance. The cacheInstance will be disabled")
 	}
 
 	// Add proxy
@@ -96,8 +96,8 @@ func main() {
 	providers := map[string]repository.AvatarProvider{
 		"discord": repository.NewDiscordAvatarProvider(discordBot),
 	}
-	gifService := service.NewGIFService(cacheGIF, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
-	apngService := service.NewAPngService(cachePNG, providers, petpet.DefaultConfig)
+	gifService := service.NewGIFService(cacheInstance, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+	apngService := service.NewAPngService(cacheInstance, providers, petpet.DefaultConfig)
 
 	// Set up routing
 	r := chi.NewRouter()

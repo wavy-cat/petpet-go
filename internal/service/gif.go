@@ -54,8 +54,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 		if err == nil {
 			return cachedGif, nil
 		} else if err.Error() != "not exist" {
-			logger, ok := ctx.Value("logger").(*zap.Logger)
-			if ok {
+			if logger, ok := ctx.Value("logger").(*zap.Logger); ok {
 				logger.Warn("Error when retrieving GIF from cache",
 					zap.Error(err), zap.String("avatar_id", avatarId))
 			}

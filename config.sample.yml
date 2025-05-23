@@ -39,15 +39,42 @@ discord:
 # The cache is used to store previously generated GIFs instead of re-generating them.
 # Disabled by default
 cache:
-  # Cache storage location. Must be either `fs` (on disk) or `memory` (in memory) or nothing.
+  # Cache storage location. Must be either `fs` (on disk), `memory` (in memory), `s3` (Amazon S3 or compatible) or nothing.
   # `CACHE_STORAGE` in env. Default is nothing
   storage: "fs"
-  # If the storage type "memory" is used, this parameter sets the cache capacity.
-  # `CACHE_MEMORY_CAPACITY` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 100
-  memoryCapacity: 100
-  # If the storage type "fs" is used, this parameter sets the directory where the cache will be stored.
-  # `CACHE_FS_PATH` in env. Default is `./cache`
-  fsPath: "./cache"
+  # Memory cache configuration
+  memory:
+    # Cache capacity (number of items to store in memory).
+    # `CACHE_MEMORY_CAPACITY` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 100
+    capacity: 100
+  # Filesystem cache configuration
+  fs:
+    # Directory where the cache will be stored.
+    # `CACHE_FS_PATH` in env. Default is `./cache`
+    path: "./cache"
+  # S3 cache configuration
+  s3:
+    # S3 bucket name (required for S3 storage).
+    # `CACHE_S3_BUCKET` in env.
+    bucket: "petpet-cache"
+    # S3 endpoint URL.
+    # Use this for custom S3-compatible services like MinIO or for specific AWS endpoints.
+    # Leave empty to use the default AWS S3 endpoint.
+    # `CACHE_S3_ENDPOINT` in env.
+    endpoint: "http://localhost:9000"
+    # AWS region.
+    # `CACHE_S3_REGION` in env. Default is "us-east-1"
+    region: "us-east-1"
+    # AWS access key.
+    # If provided along with secretKey, will be used for authentication.
+    # If not provided, will use the default AWS credential chain.
+    # `CACHE_S3_ACCESS_KEY` in env.
+    accessKey: ""
+    # AWS secret key.
+    # If provided along with accessKey, will be used for authentication.
+    # If not provided, will use the default AWS credential chain.
+    # `CACHE_S3_SECRET_KEY` in env.
+    secretKey: ""
 proxy:
   # Proxy URL to send Discord requests to.
   # `PROXY_URL` in env
