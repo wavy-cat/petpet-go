@@ -1,0 +1,32 @@
+name: Deploy to Cloud
+
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  cloud-push:
+    name: "Push to Cloud CR"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to YC CR
+        uses: yc-actions/yc-cr-login@v3
+        with:
+          yc-sa-json-credentials: ${{ secrets.CR_CREDENTIALS }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: cr.yandex/${{ secrets.CR_ID }}/petpet-go:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  #  cloud-deploy:
+  #    name: "Deploy to Cloud"
+  #    runs-on: ubuntu-latest
+  #    needs: cloud-push
