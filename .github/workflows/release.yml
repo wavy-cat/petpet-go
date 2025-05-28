@@ -10,6 +10,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   GO_VERSION: 1.24.1
+  ARTIFACTS_PATH: ./artifacts
 
 jobs:
   build:
@@ -63,15 +64,15 @@ jobs:
 
       - name: "Download binaries"
         uses: actions/download-artifact@v4
-        id: artifacts
+        with:
+          merge-multiple: true
+          path: ${{ env.ARTIFACTS_PATH }}
 
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for dir in "${{ steps.artifacts.outputs.download-path }}"/*; do
-            gh release upload ${{ github.event.release.tag_name }} $dir/* --clobber
-          done
+          gh release upload ${{ github.event.release.tag_name }} ${{ env.ARTIFACTS_PATH }}/*
 
   publish-docker:
     name: "Push to GHCR"
