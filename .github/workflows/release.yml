@@ -68,7 +68,10 @@ jobs:
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ${{ steps.artifacts.outputs.download-path }}
+        run: |
+          for file in "${{ steps.artifacts.outputs.download-path }}"/*; do
+            gh release upload "${{ github.event.release.tag_name }}" "$file" --clobber
+          done
 
   publish-docker:
     name: "Push to GHCR"
