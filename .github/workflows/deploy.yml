@@ -13,9 +13,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to YC CR
         uses: yc-actions/yc-cr-login@v3
         with:
@@ -29,8 +26,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: cr.yandex/${{ secrets.CR_ID }}/petpet-go:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
   #  cloud-deploy:
   #    name: "Deploy to Cloud"
