@@ -69,8 +69,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for file in "${{ steps.artifacts.outputs.download-path }}"/*; do
-            gh release upload "${{ github.event.release.tag_name }}" "$file" --clobber
+          for dir in "${{ steps.artifacts.outputs.download-path }}"/*; do
+            gh release upload ${{ github.event.release.tag_name }} $dir/* --clobber
           done
 
   publish-docker:
