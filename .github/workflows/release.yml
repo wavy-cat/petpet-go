@@ -58,6 +58,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: "Download binaries"
         uses: actions/download-artifact@v4
         id: artifacts
