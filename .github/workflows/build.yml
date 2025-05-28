@@ -134,4 +134,5 @@ jobs:
           to-env: production
           ignore-unchanged: true
           only-severities: critical,high,medium
+          organization: ${{ secrets.DOCKER_ORG }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
