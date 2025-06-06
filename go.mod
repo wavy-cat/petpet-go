@@ -11,7 +11,6 @@ require (
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/kettek/apng v0.0.0-20220823221153-ff692776a607
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	go.uber.org/zap v1.27.0
 )
