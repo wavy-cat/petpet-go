@@ -15,11 +15,11 @@ func TestGIF(t *testing.T) {
 	}{
 		{
 			source: getSource("wavycat.png"),
-			len:    77075,
+			len:    73599,
 		},
 		{
 			source: getSource("tasica.png"),
-			len:    58173,
+			len:    55654,
 		},
 	}
 
