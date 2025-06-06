@@ -4,7 +4,7 @@
 ![GitHub License](https://img.shields.io/github/license/wavy-cat/petpet-go?style=for-the-badge&labelColor=1A222E&color=242B36)
 ![GitHub repo size](https://img.shields.io/github/repo-size/wavy-cat/petpet-go?style=for-the-badge&logo=github&logoColor=white&labelColor=1A222E&color=242B36&cacheSeconds=0)
 
-A web service for generating petpet GIFs (and APNG now) based on a Discord user's avatar.
+A web service for generating petpet GIFs based on a Discord user's avatar.
 
 ---
 
@@ -25,31 +25,19 @@ A web service for generating petpet GIFs (and APNG now) based on a Discord user'
 | `delay`    | `4`     | Unsigned Integer | GIF speed. Bigger is slower                        |
 | `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers) |
 
-### Formats
-
-* `.gif`
-* `.apng`
-
 ## Getting started
 
-* Docker (Container Registry)
+* Using Docker:
 
-```bash
-docker run ghcr.io/wavy-cat/petpet-go
-```
+  `docker run ghcr.io/wavy-cat/petpet-go`
 
-* Docker (Local)
+* Using binaries:
 
-```bash
-docker build . -t ghcr.io/wavy-cat/petpet-go
-docker run ghcr.io/wavy-cat/petpet-go
-```
+  Download the [latest release](https://github.com/wavy-cat/petpet-go/releases/latest) and run it.
 
-* Go
+* Compiling (you need [Go compiler](https://go.dev/dl/)):
 
-```bash
-go run github.com/wavy-cat/petpet-go/cmd/app
-```
+  `go run github.com/wavy-cat/petpet-go/cmd/app`
 
 ## Configuration
 

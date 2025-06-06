@@ -14,7 +14,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
-	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_apng"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
 	middleware2 "github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository"
@@ -97,7 +96,6 @@ func main() {
 		"discord": repository.NewDiscordAvatarProvider(discordBot),
 	}
 	gifService := service.NewGIFService(cacheInstance, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
-	apngService := service.NewAPngService(cacheInstance, providers, petpet.DefaultConfig)
 
 	// Set up routing
 	r := chi.NewRouter()
@@ -126,9 +124,6 @@ func main() {
 		gifHandler := ds_gif.NewHandler(gifService, transport)
 		r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
 		r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
-
-		apngHandler := ds_apng.NewHandler(apngService, transport)
-		r.Method(http.MethodGet, "/ds/{user_id}.apng", apngHandler)
 	})
 
 	// Set up the server

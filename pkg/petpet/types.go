@@ -21,7 +21,7 @@ var DefaultConfig = Config{
 
 type colorCountedImage struct {
 	Image      image.Image
-	ColorCount int // Кол-во цветов в палитре
+	ColorCount int // Number of colors in the palette
 }
 
 type Quantizer interface {
