@@ -86,8 +86,6 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 
 	for i := range frames {
 		go func(i int) {
-			canvas := createTransparentImage(width, height, basePalette)
-
 			squeeze := float64(i)
 			if i >= frames/2 {
 				squeeze = float64(frames - i)
@@ -96,9 +94,11 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 			var (
 				scaleX  = 0.8 + squeeze*0.02
 				scaleY  = 0.8 - squeeze*0.05
-				offsetX = int((1 - scaleX) * float64(width) * 0.5)
-				offsetY = int((1 - scaleY) * float64(height))
+				offsetX = int(((1-scaleX)*0.5 + 0.1) * float64(width))
+				offsetY = int(((1 - scaleY) - 0.08) * float64(height))
 			)
+
+			canvas := createTransparentImage(width, height, basePalette)
 
 			resizedImg := resizeImage(baseImg, int(float64(width)*scaleX), int(float64(height)*scaleY))
 			pasteImage(canvas, resizedImg, offsetX, offsetY)
