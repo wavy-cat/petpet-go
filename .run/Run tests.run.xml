@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run tests" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="petpet-go" />
+    <working_directory value="$PROJECT_DIR$" />
+    <kind value="DIRECTORY" />
+    <package value="wavycat.ru/petpet-go" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>
