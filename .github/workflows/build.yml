@@ -35,9 +35,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Build
-        env:
-          CGO_ENABLED: 0
-        run: go build -v -trimpath -ldflags="-s -w" -o "petpet-night-build" github.com/wavy-cat/petpet-go/cmd/app
+        run: make
 
   vet:
     name: "go vet"
@@ -52,7 +50,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run go vet
-        run: go vet -v ./...
+        run: make vet
 
   test:
     name: "go test"
@@ -67,7 +65,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run go test
-        run: go test -v ./...
+        run: make test
 
   build-docker:
     name: "Build and Push Docker Image"
