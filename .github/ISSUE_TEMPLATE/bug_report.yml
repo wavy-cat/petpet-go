@@ -38,6 +38,7 @@ body:
         - Linux
         - macOS
         - Windows
+        - Other
     validations:
       required: true
 
@@ -46,10 +47,11 @@ body:
     attributes:
       label: Architecture
       options:
-        - x86
         - x86-64
-        - arm
+        - x86
         - arm64
+        - arm
+        - Other
     validations:
       required: true
 
