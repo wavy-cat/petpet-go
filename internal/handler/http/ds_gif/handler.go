@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
-	"github.com/wavy-cat/petpet-go/internal/service"
-	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
+	"wavycat.ru/petpet-go/internal/handler/http/utils"
+	"wavycat.ru/petpet-go/internal/service"
+	"wavycat.ru/petpet-go/pkg/responses"
 )
 
 type Handler struct {

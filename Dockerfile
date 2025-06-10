@@ -9,7 +9,7 @@ COPY go* .
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o server github.com/wavy-cat/petpet-go/cmd/app
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o server wavycat.ru/petpet-go/cmd/app
 
 FROM gcr.io/distroless/static-debian12:nonroot
 

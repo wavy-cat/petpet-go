@@ -1,4 +1,4 @@
-module github.com/wavy-cat/petpet-go
+module wavycat.ru/petpet-go
 
 go 1.24.1
 

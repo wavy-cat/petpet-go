@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"github.com/wavy-cat/petpet-go/pkg/discord"
+	"wavycat.ru/petpet-go/pkg/discord"
 )
 
 type DiscordAvatarProvider struct {
