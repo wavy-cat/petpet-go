@@ -38,6 +38,8 @@ body:
         - Linux
         - macOS
         - Windows
+    validations:
+      required: true
 
   - type: dropdown
     id: arch
@@ -48,6 +50,8 @@ body:
         - x86-64
         - arm
         - arm64
+    validations:
+      required: true
 
   - type: checkboxes
     id: docker
