@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"wavycat.ru/petpet-go/internal/middleware"
 
 	"go.uber.org/zap"
 	"wavycat.ru/petpet-go/internal/repository"
@@ -54,7 +55,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 		if err == nil {
 			return cachedGif, nil
 		} else if err.Error() != "not exist" {
-			if logger, ok := ctx.Value("logger").(*zap.Logger); ok {
+			if logger, ok := ctx.Value(middleware.LoggerKey).(*zap.Logger); ok {
 				logger.Warn("Error when retrieving GIF from cache",
 					zap.Error(err), zap.String("avatar_id", avatarId))
 			}

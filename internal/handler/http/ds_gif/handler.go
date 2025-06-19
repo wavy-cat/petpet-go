@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"wavycat.ru/petpet-go/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -25,7 +26,7 @@ func NewHandler(gifService service.GIFService, transport *http.Transport) *Handl
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	logger := r.Context().Value("logger").(*zap.Logger)
+	logger := r.Context().Value(middleware.LoggerKey).(*zap.Logger)
 
 	// Getting the user ID
 	userId := chi.URLParam(r, "user_id")

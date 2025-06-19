@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 	"wavycat.ru/petpet-go/internal/config"
 	"wavycat.ru/petpet-go/internal/handler/http/ds_gif"
-	middleware2 "wavycat.ru/petpet-go/internal/middleware"
+	"wavycat.ru/petpet-go/internal/middleware"
 	"wavycat.ru/petpet-go/internal/repository"
 	"wavycat.ru/petpet-go/internal/service"
 	"wavycat.ru/petpet-go/pkg/cache"
@@ -100,10 +100,10 @@ func main() {
 	// Set up routing
 	r := chi.NewRouter()
 
-	r.Use(middleware2.RequestLogger(logger, "petpet"))
-	r.Use(middleware.GetHead)
+	r.Use(middleware.Logger(logger, "petpet"))
+	r.Use(chiMiddleware.GetHead)
 	if cfg.Heartbeat.Enable {
-		r.Use(middleware.Heartbeat(cfg.Heartbeat.Path))
+		r.Use(chiMiddleware.Heartbeat(cfg.Heartbeat.Path))
 	}
 
 	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
@@ -115,7 +115,7 @@ func main() {
 
 	r.Group(func(r chi.Router) {
 		if cfg.Throttle.Enable {
-			r.Use(middleware.ThrottleBacklog(
+			r.Use(chiMiddleware.ThrottleBacklog(
 				int(cfg.Throttle.Limit),
 				int(cfg.Throttle.Backlog),
 				time.Duration(cfg.Throttle.BacklogTimeout)*time.Second))
