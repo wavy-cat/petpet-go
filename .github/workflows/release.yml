@@ -44,7 +44,7 @@ jobs:
           if [ "$GOOS" = "windows" ]; then
             output_name="$output_name.exe"
           fi
-          go build -v -trimpath -ldflags="-s -w" -o "$output_name" github.com/wavy-cat/petpet-go/cmd/app
+          go build -v -trimpath -ldflags="-s -w" -o "$output_name" wavycat.ru/petpet-go/cmd/app
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
