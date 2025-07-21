@@ -25,6 +25,8 @@ func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 	}
 
 	req.Header.Set("Authorization", "Bot "+b.token)
+	req.Header.Set("User-Agent", "PetPet-Go")
+	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{}
 
