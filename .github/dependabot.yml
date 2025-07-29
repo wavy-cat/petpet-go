@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # Maintain dependencies for Go dependencies
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
@@ -9,8 +8,13 @@ updates:
       all-dependencies:
         applies-to: version-updates
         patterns:
-          - "*"
-  # Maintain dependencies for GitHub Actions
+          - "*aws*"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
