@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  GO_VERSION: 1.24.1
+  GO_VERSION: 1.24
   ARTIFACTS_PATH: ./artifacts
 
 jobs:
