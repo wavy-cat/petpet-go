@@ -5,12 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"wavycat.ru/petpet-go/internal/middleware"
+	"github.com/wavy-cat/petpet-go/internal/middleware"
 
+	"github.com/wavy-cat/petpet-go/internal/repository"
+	"github.com/wavy-cat/petpet-go/pkg/cache"
+	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"go.uber.org/zap"
-	"wavycat.ru/petpet-go/internal/repository"
-	"wavycat.ru/petpet-go/pkg/cache"
-	"wavycat.ru/petpet-go/pkg/petpet"
 )
 
 type GIFService interface {

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"wavycat.ru/petpet-go/pkg/petpet"
-	"wavycat.ru/petpet-go/pkg/petpet/quantizers"
+	"github.com/wavy-cat/petpet-go/pkg/petpet"
+	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 )
 
 func TestGIF(t *testing.T) {

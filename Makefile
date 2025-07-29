@@ -5,7 +5,7 @@ CGO_ENABLED=0
 all: build
 
 build:
-	go build -trimpath -ldflags="-s -w" -o server wavycat.ru/petpet-go/cmd/app
+	go build -trimpath -ldflags="-s -w" -o server github.com/wavy-cat/petpet-go/cmd/app
 
 vet:
 	go vet -v ./...

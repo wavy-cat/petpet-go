@@ -3,7 +3,7 @@
     <module name="petpet-go" />
     <working_directory value="$PROJECT_DIR$" />
     <kind value="DIRECTORY" />
-    <package value="wavycat.ru/petpet-go" />
+    <package value="github.com/wavy-cat/petpet-go" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <framework value="gotest" />
