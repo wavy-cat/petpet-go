@@ -26,6 +26,9 @@ func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
 		return nil, err
 	}
 
+	req.Header.Set("User-Agent", userAgent)
+	req.Header.Set("Accept", "image/png")
+
 	client := &http.Client{}
 
 	transport, ok := ctx.Value("transport").(*http.Transport)
