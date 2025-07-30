@@ -49,8 +49,10 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Run go vet
-        run: make vet
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1
 
   test:
     name: "go test"
@@ -65,7 +67,12 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run go test
-        run: make test
+        run: go test -coverprofile=coverage.txt ./...
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build-docker:
     name: "Build Docker image"
@@ -93,8 +100,7 @@ jobs:
             type=semver,pattern=v{{version}}
             type=sha,prefix=,suffix=,format=short
 
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           sbom: ${{ github.event_name != 'pull_request' }}
