@@ -11,7 +11,9 @@ func getSource(filename string) []byte {
 	if err != nil {
 		panic(err)
 	}
-	defer rawSource.Close()
+	defer func() {
+		_ = rawSource.Close()
+	}()
 
 	// Convert content from Reader type to []bytes
 	source, err := io.ReadAll(rawSource)

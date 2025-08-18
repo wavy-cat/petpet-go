@@ -2,9 +2,11 @@ package ds_gif
 
 import (
 	"context"
-	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"net/http"
 	"strings"
+
+	"github.com/wavy-cat/petpet-go/internal/middleware"
+	"github.com/wavy-cat/petpet-go/pkg/discord"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
@@ -65,8 +67,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Calling the service to generate GIF
-	ctx := context.WithValue(context.Background(), "logger", logger)
-	ctx = context.WithValue(ctx, "transport", h.transport)
+	ctx := context.WithValue(r.Context(), discord.TransportKey, h.transport)
 	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, "discord", delay)
 	if err != nil {
 		logger.Warn("Error during GIF generation", zap.Error(err))

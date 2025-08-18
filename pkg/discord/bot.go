@@ -30,7 +30,7 @@ func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 
 	client := &http.Client{}
 
-	transport, ok := ctx.Value("transport").(*http.Transport)
+	transport, ok := ctx.Value(TransportKey).(*http.Transport)
 	if ok && transport != nil {
 		client.Transport = transport
 	}
@@ -39,7 +39,9 @@ func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	// Читаем ответ
 	body, err := io.ReadAll(resp.Body)

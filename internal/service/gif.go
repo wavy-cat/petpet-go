@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 
 	"github.com/wavy-cat/petpet-go/internal/repository"
@@ -35,6 +36,12 @@ func NewGIFService(cache cache.BytesCache, providers map[string]repository.Avata
 }
 
 func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string, delay int) ([]byte, error) {
+	// Getting the logger
+	logger, ok := ctx.Value(middleware.LoggerKey).(*zap.Logger)
+	if !ok {
+		panic("missing logger in gif service")
+	}
+
 	// Getting the required provider
 	provider, ok := g.providers[source]
 	if !ok {
@@ -55,10 +62,9 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 		if err == nil {
 			return cachedGif, nil
 		} else if err.Error() != "not exist" {
-			if logger, ok := ctx.Value(middleware.LoggerKey).(*zap.Logger); ok {
-				logger.Warn("Error when retrieving GIF from cache",
-					zap.Error(err), zap.String("avatar_id", avatarId))
-			}
+			logger.Warn("Error when retrieving GIF from cache",
+				zap.Error(err),
+				zap.String("avatar_id", avatarId))
 		}
 	}
 

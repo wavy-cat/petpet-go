@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"io"
-	"strings"
 )
 
 // S3Cache implements the BytesCache interface using Amazon S3 or compatible storage
@@ -80,7 +81,9 @@ func (sc *S3Cache) Pull(key string) ([]byte, error) {
 		}
 		return nil, err
 	}
-	defer result.Body.Close()
+	defer func() {
+		_ = result.Body.Close()
+	}()
 
 	return io.ReadAll(result.Body)
 }
