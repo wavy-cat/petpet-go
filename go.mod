@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.31.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.87.1
-	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-chi/chi/v5 v5.2.3
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
