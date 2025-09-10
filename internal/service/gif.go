@@ -69,7 +69,7 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 	}
 
 	// Getting the user's avatar
-	avatarImage, err := provider.GetAvatarImage(ctx, userId)
+	avatarImage, err := getAvatarImage(ctx, userId, avatarId, provider, g.cache)
 	if err != nil {
 		return nil, err
 	}
@@ -97,4 +97,33 @@ func (g gifService) GetOrGenerateGif(ctx context.Context, userId, source string,
 
 	// Returning the result
 	return data, nil
+}
+
+func getAvatarImage(ctx context.Context, userId, avatarId string, provider repository.AvatarProvider, cache cache.BytesCache) ([]byte, error) {
+	if cache != nil {
+		cached, err := cache.Pull(fmt.Sprintf("avatar-%s", avatarId))
+		if err == nil {
+			return cached, nil
+		}
+	}
+
+	avatarImage, err := provider.GetAvatarImage(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	if cache != nil {
+		go func() {
+			err = cache.Push(fmt.Sprintf("avatar-%s", avatarId), avatarImage)
+			if err != nil {
+				logger := ctx.Value(middleware.LoggerKey).(*zap.Logger)
+				logger.Error("Error pulling avatar in cache",
+					zap.Error(err),
+					zap.String("user_id", userId),
+					zap.String("avatar_id", avatarId))
+			}
+		}()
+	}
+
+	return avatarImage, nil
 }
