@@ -16,13 +16,12 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/internal/repository"
+	discord2 "github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
 	"github.com/wavy-cat/petpet-go/pkg/cache/s3"
-	"github.com/wavy-cat/petpet-go/pkg/discord"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
@@ -88,14 +87,10 @@ func main() {
 		}
 	}
 
-	// Create a bot object
-	discordBot := discord.NewBot(cfg.BotToken)
-
-	// Setting up the service
-	providers := map[string]repository.AvatarProvider{
-		"discord": repository.NewDiscordAvatarProvider(discordBot),
-	}
-	gifService := service.NewGIFService(cacheInstance, providers, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+	gifService := service.NewGIFService(cacheInstance,
+		discord2.NewDiscordAvatarProvider(cfg.BotToken),
+		petpet.DefaultConfig,
+		quantizers.HierarhicalQuantizer{})
 
 	// Set up routing
 	r := chi.NewRouter()

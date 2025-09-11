@@ -68,7 +68,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Calling the service to generate GIF
 	ctx := context.WithValue(r.Context(), discord.TransportKey, h.transport)
-	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, "discord", delay)
+	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, delay)
 	if err != nil {
 		logger.Warn("Error during GIF generation", zap.Error(err))
 

@@ -2,8 +2,11 @@ package avatar
 
 import "context"
 
+type UserAvatar interface {
+	GetId(ctx context.Context) (string, error)
+	GetImage(ctx context.Context) ([]byte, error)
+}
+
 type Provider interface {
-	GetAvatarId(ctx context.Context, userId string) (string, error)       // The method returns the avatar ID
-	GetAvatarImage(ctx context.Context, userId string) ([]byte, error)    // The method returns the avatar image
-	GetAvatar(ctx context.Context, userId string) ([]byte, string, error) // The method returns the avatar image and its ID
+	GetUserAvatar(ctx context.Context, userId string) (UserAvatar, error)
 }
