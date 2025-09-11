@@ -17,8 +17,8 @@ type Server struct {
 	} `yaml:"heartbeat"`
 	Throttle struct {
 		Enable         bool `yaml:"enable" env:"THROTTLE_ENABLE" env-default:"false"`
-		Limit          uint `yaml:"limit" env:"THROTTLE_LIMIT" env-default:"2"`
-		Backlog        uint `yaml:"backlog" env:"THROTTLE_BACKLOG" env-default:"3"`
+		Limit          int  `yaml:"limit" env:"THROTTLE_LIMIT" env-default:"2"`
+		Backlog        int  `yaml:"backlog" env:"THROTTLE_BACKLOG" env-default:"3"`
 		BacklogTimeout uint `yaml:"backlogTimeout" env:"THROTTLE_BACKLOG_TIMEOUT" env-default:"5"` // in secs
 	} `yaml:"throttle"`
 }

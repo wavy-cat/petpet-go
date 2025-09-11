@@ -111,8 +111,8 @@ func main() {
 	r.Group(func(r chi.Router) {
 		if cfg.Throttle.Enable {
 			r.Use(chiMiddleware.ThrottleBacklog(
-				int(cfg.Throttle.Limit),
-				int(cfg.Throttle.Backlog),
+				cfg.Throttle.Limit,
+				cfg.Throttle.Backlog,
 				time.Duration(cfg.Throttle.BacklogTimeout)*time.Second))
 		}
 
