@@ -80,8 +80,8 @@ func main() {
 	if cfg.URL != "" {
 		proxyURL, err := url.Parse(cfg.URL)
 		if err != nil {
-			logger.Warn("Failed to parse proxy URL. The server will be started without using a proxy",
-				zap.Error(err))
+			logger.Warn("Failed to parse proxy URL.", zap.Error(err))
+			os.Exit(-1)
 		} else {
 			transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 		}
