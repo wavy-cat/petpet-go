@@ -12,7 +12,7 @@ type User struct {
 	ID string `json:"id"`
 	// Username      string  `json:"username"`
 	// Discriminator string  `json:"discriminator"`
-	Avatar *string `json:"avatar"`
+	Avatar *string `json:"avatar"` // optional
 }
 
 func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
