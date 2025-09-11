@@ -16,7 +16,7 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	discord2 "github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
+	"github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
@@ -88,7 +88,7 @@ func main() {
 	}
 
 	gifService := service.NewGIFService(cacheInstance,
-		discord2.NewDiscordAvatarProvider(cfg.BotToken),
+		discord.NewDiscordAvatarProvider(cfg.BotToken),
 		petpet.DefaultConfig,
 		quantizers.HierarhicalQuantizer{})
 
