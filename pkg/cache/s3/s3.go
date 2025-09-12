@@ -68,7 +68,7 @@ func (sc *S3Cache) Pull(key string) ([]byte, error) {
 	})
 	if err != nil {
 		var responseError *http2.ResponseError
-		if errors.As(err, &responseError) && responseError.ResponseError.HTTPStatusCode() == http.StatusNotFound {
+		if errors.As(err, &responseError) && responseError.HTTPStatusCode() == http.StatusNotFound {
 			return nil, fmt.Errorf("not exist")
 		}
 		return nil, err
