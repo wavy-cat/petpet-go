@@ -3,11 +3,13 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"strings"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	http2 "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -58,16 +60,6 @@ func (sc *S3Cache) Push(key string, value []byte) error {
 	return err
 }
 
-// isNotFoundError checks if the error is a "not found" error from S3
-func isNotFoundError(err error) bool {
-	// Check for common S3 error messages indicating a missing object
-	return err != nil && (
-	// Look for common error message patterns in S3 errors
-	strings.Contains(err.Error(), "NoSuchKey") ||
-		strings.Contains(err.Error(), "NoSuchBucket") ||
-		strings.Contains(err.Error(), "NoSuchUpload"))
-}
-
 // Pull retrieves the data from the S3 bucket
 func (sc *S3Cache) Pull(key string) ([]byte, error) {
 	result, err := sc.client.GetObject(context.TODO(), &s3.GetObjectInput{
@@ -75,8 +67,8 @@ func (sc *S3Cache) Pull(key string) ([]byte, error) {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		// Check if the error is a "not found" error
-		if isNotFoundError(err) {
+		var responseError *http2.ResponseError
+		if errors.As(err, &responseError) && responseError.ResponseError.HTTPStatusCode() == http.StatusNotFound {
 			return nil, fmt.Errorf("not exist")
 		}
 		return nil, err
