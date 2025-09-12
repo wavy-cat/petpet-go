@@ -27,6 +27,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const serviceName = "petpet"
+
 func main() {
 	// Setting up a logger
 	logger, err := zap.NewProduction()
@@ -86,18 +88,20 @@ func main() {
 		}
 	}
 
-	gifService := service.NewGIFService(cacheInstance,
-		discord.NewDiscordAvatarProvider(cfg.BotToken),
-		petpet.DefaultConfig,
-		quantizers.HierarhicalQuantizer{})
-
 	// Set up routing
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger(logger, "petpet"))
-	r.Use(chiMiddleware.GetHead)
+	r.Use(middleware.Logger(logger, serviceName))
+
 	if cfg.Heartbeat.Enable {
 		r.Use(chiMiddleware.Heartbeat(cfg.Heartbeat.Path))
+	}
+
+	if cfg.Throttle.Enable {
+		r.Use(chiMiddleware.ThrottleBacklog(
+			cfg.Throttle.Limit,
+			cfg.Throttle.Backlog,
+			time.Duration(cfg.Throttle.BacklogTimeout)*time.Second))
 	}
 
 	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
@@ -107,18 +111,15 @@ func main() {
 		}
 	})
 
-	r.Group(func(r chi.Router) {
-		if cfg.Throttle.Enable {
-			r.Use(chiMiddleware.ThrottleBacklog(
-				cfg.Throttle.Limit,
-				cfg.Throttle.Backlog,
-				time.Duration(cfg.Throttle.BacklogTimeout)*time.Second))
-		}
+	// Add Discord service
+	gifService := service.NewGIFService(cacheInstance,
+		discord.NewDiscordAvatarProvider(cfg.BotToken),
+		petpet.DefaultConfig,
+		quantizers.HierarhicalQuantizer{})
 
-		gifHandler := ds_gif.NewHandler(gifService, transport)
-		r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
-		r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
-	})
+	gifHandler := ds_gif.NewHandler(gifService, transport)
+	r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
+	r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
 
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
