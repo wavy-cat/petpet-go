@@ -1,11 +1,11 @@
 name: Push to Artifact Registry
 
 on:
-    push:
-      branches: [ "master" ]
+  push:
+    branches: [ "master" ]
 
 env:
-    IMAGE_NAME: "petpet"
+  IMAGE_NAME: "petpet"
 
 jobs:
   push_to_ar:
@@ -35,7 +35,11 @@ jobs:
           password: '${{ steps.auth.outputs.access_token }}'
           registry: '${{ secrets.AR_REPO_LOCATION }}-docker.pkg.dev'
 
-      - name: Build and Push Container
-        run: |-
-          docker build -t "${{ secrets.AR_URL }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" ./
-          docker push "${{ secrets.AR_URL }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.AR_URL }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
