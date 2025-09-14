@@ -2,7 +2,7 @@ name: Push to Artifact Registry
 
 on:
     push:
-      branches: [ "main" ]
+      branches: [ "master" ]
 
 env:
     IMAGE_NAME: "petpet"
