@@ -4,3 +4,5 @@ web
 /pkg/petpet/test/output.apng
 /pkg/petpet/test/output_fast.apng
 config.yml
+# Added by goreleaser init:
+dist/
