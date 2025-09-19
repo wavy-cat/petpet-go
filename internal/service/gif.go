@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
@@ -59,7 +60,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 		cachedGif, err := s.cache.Pull(cacheName)
 		if err == nil {
 			return cachedGif, nil
-		} else if err.Error() != "not exist" {
+		} else if !errors.Is(err, cache.NotExists) {
 			logger.Warn("Error when retrieving GIF from cache",
 				zap.Error(err),
 				zap.String("avatar_id", avatarId))

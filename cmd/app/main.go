@@ -154,5 +154,10 @@ func main() {
 		logger.Fatal("Server forced to shutdown:", zap.Error(err))
 	}
 
+	logger.Info("Closing the cache...")
+	if err := cacheInstance.Close(); err != nil {
+		logger.Error("Error closing cache", zap.Error(err), zap.String("cache_type", cfg.Storage))
+	}
+
 	logger.Info("Server exited properly")
 }

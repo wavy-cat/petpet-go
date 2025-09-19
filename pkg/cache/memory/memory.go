@@ -4,6 +4,8 @@ import (
 	"container/list"
 	"errors"
 	"sync"
+
+	"github.com/wavy-cat/petpet-go/pkg/cache"
 )
 
 type entry struct {
@@ -59,7 +61,7 @@ func (l *LRUCache) Pull(key string) ([]byte, error) {
 		l.ll.MoveToFront(el)
 		return el.Value.(*entry).value, nil
 	}
-	return nil, errors.New("not exist")
+	return nil, cache.NotExists
 }
 
 func (l *LRUCache) removeOldest() {
@@ -69,4 +71,10 @@ func (l *LRUCache) removeOldest() {
 		kv := oldest.Value.(*entry)
 		delete(l.cache, kv.key)
 	}
+}
+
+// Close - a method with incomplete implementation for optimization.
+// Actually, you can continue to use the cache even after closing it.
+func (l *LRUCache) Close() error {
+	return nil
 }
