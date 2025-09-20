@@ -1,8 +1,9 @@
 package petpet
 
 import (
-	"github.com/nfnt/resize"
 	"image"
+
+	"github.com/nfnt/resize"
 )
 
 func resizeImage(img image.Image, newWidth, newHeight int) image.Image {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image/png"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository/avatar"
@@ -76,11 +77,16 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 	// Generating a GIF
 	config := s.config
 	config.Delay = delay
-	avatarReader := bytes.NewReader(avatarImage)
 
 	var buf bytes.Buffer
 	defer buf.Reset()
-	err = petpet.MakeGif(avatarReader, &buf, config, s.quantizer)
+
+	image, err := png.Decode(bytes.NewReader(avatarImage))
+	if err != nil {
+		return nil, fmt.Errorf("error decoding avatar image: %v", err)
+	}
+
+	err = petpet.MakeGif(image, &buf, config, s.quantizer)
 	if err != nil {
 		return nil, err
 	}

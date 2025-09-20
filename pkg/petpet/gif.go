@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"image/png"
 	"io"
 	"sync"
 )
@@ -43,9 +42,8 @@ func pasteImage(dest *image.Paletted, src image.Image, offsetX, offsetY int) {
 	draw.Draw(dest, src.Bounds().Add(image.Pt(offsetX, offsetY)), src, image.Point{}, draw.Over)
 }
 
-// MakeGif генерирует pet-pet гифку.
-// `source` должен быть типом io.Reader и содержать PNG изображение.
-func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) error {
+// MakeGif generates a pet-pet gif.
+func MakeGif(baseImg image.Image, w io.Writer, config Config, quantizer Quantizer) error {
 	var (
 		width    = config.Width
 		height   = config.Height
@@ -53,11 +51,6 @@ func MakeGif(source io.Reader, w io.Writer, config Config, quantizer Quantizer) 
 		disposal = config.Disposal
 	)
 	const frames = 10
-
-	baseImg, err := png.Decode(source)
-	if err != nil {
-		return err
-	}
 
 	if size := baseImg.Bounds().Size(); size.X != width || size.Y != width {
 		baseImg = resizeImage(baseImg, width, height)
