@@ -2,6 +2,10 @@ package tests
 
 import (
 	"bytes"
+	"image"
+	"image/png"
+	"io"
+	"os"
 	"testing"
 
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
@@ -10,16 +14,16 @@ import (
 
 func TestGIF(t *testing.T) {
 	images := []struct {
-		source []byte
-		len    int
+		img image.Image
+		len int
 	}{
 		{
-			source: getSource("wavycat.png"),
-			len:    73599,
+			img: getImage("wavycat.png"),
+			len: 73599,
 		},
 		{
-			source: getSource("tasica.png"),
-			len:    55654,
+			img: getImage("tasica.png"),
+			len: 55654,
 		},
 	}
 
@@ -29,7 +33,7 @@ func TestGIF(t *testing.T) {
 		for _, img := range images {
 			output := bytes.Buffer{}
 
-			err := petpet.MakeGif(bytes.NewReader(img.source), &output, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+			err := petpet.MakeGif(img.img, &output, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
 			if err != nil {
 				t.Fatal("MakeGIF returned error:", err)
 			}
@@ -49,7 +53,7 @@ func TestGIF(t *testing.T) {
 		for _, img := range images {
 			output := bytes.Buffer{}
 
-			err := petpet.MakeGif(bytes.NewReader(img.source), &output, config, quantizers.HierarhicalQuantizer{})
+			err := petpet.MakeGif(img.img, &output, config, quantizers.HierarhicalQuantizer{})
 			if err != nil {
 				t.Fatal("MakeGIF returned error:", err)
 			}
@@ -59,4 +63,28 @@ func TestGIF(t *testing.T) {
 			}
 		}
 	})
+}
+
+func getImage(filename string) image.Image {
+	// Read the contents of the file
+	rawSource, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = rawSource.Close()
+	}()
+
+	// Convert content from Reader type to []bytes
+	source, err := io.ReadAll(rawSource)
+	if err != nil {
+		panic(err)
+	}
+
+	img, err := png.Decode(bytes.NewReader(source))
+	if err != nil {
+		panic(err)
+	}
+
+	return img
 }
