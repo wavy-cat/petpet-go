@@ -61,7 +61,7 @@ func (l *LRUCache) Pull(key string) ([]byte, error) {
 		l.ll.MoveToFront(el)
 		return el.Value.(*entry).value, nil
 	}
-	return nil, cache.NotExists
+	return nil, cache.ErrNotExists
 }
 
 func (l *LRUCache) removeOldest() {

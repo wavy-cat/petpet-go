@@ -48,7 +48,7 @@ func (fsc *FileSystemCache) Pull(key string) ([]byte, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, cache.NotExists
+			return nil, cache.ErrNotExists
 		}
 		return nil, err
 	}

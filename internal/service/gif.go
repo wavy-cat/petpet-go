@@ -60,7 +60,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 		cachedGif, err := s.cache.Pull(cacheName)
 		if err == nil {
 			return cachedGif, nil
-		} else if !errors.Is(err, cache.NotExists) {
+		} else if !errors.Is(err, cache.ErrNotExists) {
 			logger.Warn("Error when retrieving GIF from cache",
 				zap.Error(err),
 				zap.String("avatar_id", avatarId))
