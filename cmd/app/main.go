@@ -40,7 +40,7 @@ func main() {
 	// Setting up a logger-presets
 	var logger *zap.Logger
 
-	switch cfg.Logger.Preset {
+	switch cfg.Preset {
 	case config.ProdPreset:
 		logger, err = zap.NewProduction()
 	case config.DevPreset:
