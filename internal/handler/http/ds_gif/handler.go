@@ -70,7 +70,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(r.Context(), discord.TransportKey, h.transport)
 	gif, err := h.gifService.GetOrGenerateGif(ctx, userId, delay)
 	if err != nil {
-		logger.Warn("Error during GIF generation", zap.Error(err))
+		logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userId))
 
 		errDetails := utils.ParseDiscordError(err)
 		if err := responses.RespondSoftError(w, errDetails); err != nil {

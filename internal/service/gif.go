@@ -37,10 +37,10 @@ func NewGIFService(cache cache.BytesCache, provider avatar.Provider,
 }
 
 func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay int) ([]byte, error) {
-	// Getting the logger
+	// Getting the logger-presets
 	logger, ok := ctx.Value(middleware.LoggerKey).(*zap.Logger)
 	if !ok {
-		panic("missing logger in gif service")
+		panic("missing logger-presets in gif service")
 	}
 
 	// Getting the user's avatar id
@@ -62,7 +62,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 		if err == nil {
 			return cachedGif, nil
 		} else if !errors.Is(err, cache.ErrNotExists) {
-			logger.Warn("Error when retrieving GIF from cache",
+			logger.Error("Error when pulling GIF from cache",
 				zap.Error(err),
 				zap.String("avatar_id", avatarId))
 		}
@@ -95,9 +95,14 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 
 	// Add a GIF to the cache
 	if s.cache != nil {
-		go func() {
-			_ = s.cache.Push(cacheName, data)
-		}()
+		go func(cacheName string, data []byte) {
+			err := s.cache.Push(cacheName, data)
+			if err != nil {
+				logger.Error("Error when pushing GIF to cache",
+					zap.Error(err),
+					zap.String("avatar_id", avatarId))
+			}
+		}(cacheName, data)
 	}
 
 	return data, nil

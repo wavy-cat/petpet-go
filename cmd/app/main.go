@@ -22,6 +22,7 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
 	"github.com/wavy-cat/petpet-go/pkg/cache/s3"
+	"github.com/wavy-cat/petpet-go/pkg/logger-presets/gcp"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 	"go.uber.org/zap"
@@ -30,23 +31,37 @@ import (
 const serviceName = "petpet"
 
 func main() {
-	// Setting up a logger
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-	defer func(logger *zap.Logger) {
-		err := logger.Sync()
-		if err != nil {
-			fmt.Println("Error syncing logger:", err)
-		}
-	}(logger)
-
 	// Get config
 	cfg, err := config.GetConfig("config.yml")
 	if err != nil {
-		logger.Fatal("Failed to load config", zap.Error(err))
+		panic(err)
 	}
+
+	// Setting up a logger-presets
+	var logger *zap.Logger
+
+	switch cfg.Logger.Preset {
+	case config.ProdPreset:
+		logger, err = zap.NewProduction()
+	case config.DevPreset:
+		logger, err = zap.NewDevelopment()
+	case config.GCPPreset:
+		logger, err = gcp.NewGCPLogger()
+	default:
+		fmt.Println("Logging is disabled by default. To enable it, select a logger preset in the configuration.")
+		logger = zap.NewNop()
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer func(logger *zap.Logger) {
+		err := logger.Sync()
+		if err != nil {
+			fmt.Println("Error syncing logger-presets:", err)
+		}
+	}(logger)
 
 	// Create a cache instance
 	var cacheInstance cache.BytesCache
