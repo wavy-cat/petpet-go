@@ -82,3 +82,10 @@ proxy:
 logger:
   # Logger format preset. Must be either `prod`, `dev`, `gcp` (GCP Cloud Logging format)
   preset: "prod"
+customUpload:
+  # Maximum upload size in bytes.
+  # `CUSTOM_MAX_UPLOAD_SIZE` in env. Default is 5242880 (5MB)
+  maxUploadSize: 5242880
+  # Maximum image size in pixels.
+  # `CUSTOM_MAX_PIXEL_COUNT` in env. Default is 1000000 (1 MP)
+  maxPixelCount: 1000000
