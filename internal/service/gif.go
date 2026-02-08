@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"image"
 	"image/png"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
@@ -17,6 +18,7 @@ import (
 
 type GIFService interface {
 	GetOrGenerateGif(ctx context.Context, userId string, delay int) ([]byte, error)
+	GenerateGifFromImage(ctx context.Context, img image.Image, delay int) ([]byte, error)
 }
 
 type gifService struct {
@@ -74,24 +76,15 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 		return nil, err
 	}
 
-	// Generating a GIF
-	config := s.config
-	config.Delay = delay
-
-	var buf bytes.Buffer
-	defer buf.Reset()
-
-	image, err := png.Decode(bytes.NewReader(avatarImage))
+	decodedImage, err := png.Decode(bytes.NewReader(avatarImage))
 	if err != nil {
 		return nil, fmt.Errorf("error decoding avatar image: %v", err)
 	}
 
-	err = petpet.MakeGif(image, &buf, config, s.quantizer)
+	data, err := s.GenerateGifFromImage(ctx, decodedImage, delay)
 	if err != nil {
 		return nil, err
 	}
-
-	data := buf.Bytes()
 
 	// Add a GIF to the cache
 	if s.cache != nil {
@@ -106,6 +99,21 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 	}
 
 	return data, nil
+}
+
+func (s gifService) GenerateGifFromImage(ctx context.Context, img image.Image, delay int) ([]byte, error) {
+	_ = ctx
+	config := s.config
+	config.Delay = delay
+
+	var buf bytes.Buffer
+	defer buf.Reset()
+
+	if err := petpet.MakeGif(img, &buf, config, s.quantizer); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatar.UserAvatar) ([]byte, error) {

@@ -12,6 +12,8 @@ A web service for generating petpet GIFs based on a Discord user's avatar.
 
 <kbd>GET</kbd> `/ds/{user_id}.gif`
 
+<kbd>POST</kbd> `/custom`
+
 ### Path parameters
 
 | Name        | Type      | Description           |
@@ -24,6 +26,11 @@ A web service for generating petpet GIFs based on a Discord user's avatar.
 |------------|---------|------------------|----------------------------------------------------|
 | `delay`    | `4`     | Unsigned Integer | GIF speed. Bigger is slower                        |
 | `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers) |
+
+### Upload (POST /custom)
+
+Send a `multipart/form-data` request with a file field named `image` containing a PNG or JPEG.
+The upload is limited to 5MB and a maximum of 1 MP.
 
 ## Getting started
 

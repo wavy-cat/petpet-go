@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
+	"github.com/wavy-cat/petpet-go/internal/handler/http/custom"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
@@ -135,6 +136,9 @@ func main() {
 	gifHandler := ds_gif.NewHandler(gifService, transport)
 	r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
 	r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
+
+	uploadHandler := custom.NewHandler(gifService, cfg.CustomUpload)
+	r.Method(http.MethodPost, "/custom", uploadHandler)
 
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)

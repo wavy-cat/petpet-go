@@ -62,12 +62,18 @@ type Logger struct {
 	Preset LoggerPreset `yaml:"preset" env:"LOGGER_PRESET"`
 }
 
+type CustomUpload struct {
+	MaxUploadSize uint64 `yaml:"maxUploadSize" env:"CUSTOM_MAX_UPLOAD_SIZE" env-default:"5242880"`
+	MaxPixelCount uint   `yaml:"maxPixelCount" env:"CUSTOM_MAX_PIXEL_COUNT" env-default:"1000000"`
+}
+
 type Config struct {
 	Server
 	Discord
 	Cache
 	Proxy
 	Logger
+	CustomUpload `yaml:"customUpload"`
 }
 
 func GetYMLConfig(path string) (Config, error) {
