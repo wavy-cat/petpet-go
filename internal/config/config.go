@@ -19,12 +19,20 @@ type ServerThrottle struct {
 	BacklogTimeout uint `yaml:"backlogTimeout" env:"THROTTLE_BACKLOG_TIMEOUT" env-default:"5"` // in secs
 }
 
+type ServerTLS struct {
+	Enable   bool   `yaml:"enable" env:"TLS_ENABLE" env-default:"false"`
+	CertFile string `yaml:"certFile" env:"TLS_CERT_FILE"`
+	KeyFile  string `yaml:"keyFile" env:"TLS_KEY_FILE"`
+}
+
 type Server struct {
 	Host            string          `yaml:"host" env:"HOST"`
 	Port            uint16          `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint            `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
 	Heartbeat       ServerHeartbeat `yaml:"heartbeat"`
 	Throttle        ServerThrottle  `yaml:"throttle"`
+	TLS             ServerTLS       `yaml:"tls"`
+	EnableHTTP2     bool            `yaml:"enableHttp2" env:"ENABLE_HTTP2" env-default:"true"`
 }
 
 type Discord struct {

@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"crypto/tls"
+
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
@@ -150,14 +152,31 @@ func main() {
 		Handler:      r,
 	}
 
+	if !cfg.EnableHTTP2 {
+		srv.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler))
+	}
+
+	if cfg.TLS.Enable && (cfg.TLS.CertFile == "" || cfg.TLS.KeyFile == "") {
+		logger.Fatal("TLS is enabled but certFile or keyFile is missing")
+	}
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start the server
 	go func() {
 		logger.Info("Starting the HTTP server...", zap.String("Address", serverAddr))
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatal("Server failed:", zap.Error(err))
+
+		var serveErr error
+		switch cfg.TLS.Enable {
+		case true:
+			serveErr = srv.ListenAndServeTLS(cfg.TLS.CertFile, cfg.TLS.KeyFile)
+		default:
+			serveErr = srv.ListenAndServe()
+		}
+
+		if serveErr != nil && !errors.Is(serveErr, http.ErrServerClosed) {
+			logger.Fatal("Server failed:", zap.Error(serveErr))
 		}
 	}()
 
