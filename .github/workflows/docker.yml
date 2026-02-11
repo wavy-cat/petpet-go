@@ -1,12 +1,9 @@
 name: Docker Image
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths:
-      - CHANGELOG.md
+  release:
+    types:
+      - published
 
 env:
   REGISTRY: ghcr.io
