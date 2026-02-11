@@ -30,6 +30,20 @@ server:
     # Number of seconds requests can stay in the queue.
     # `THROTTLE_BACKLOG_TIMEOUT` in env. Default is 5
     backlogTimeout: 5
+  # TLS settings
+  tls:
+    # Enables HTTPS listener.
+    # `TLS_ENABLE` in env. Default is false
+    enable: false
+    # Path to TLS certificate file (PEM). Required when TLS is enabled.
+    # `TLS_CERT_FILE` in env.
+    certFile: "./certs/server.crt"
+    # Path to TLS private key file (PEM). Required when TLS is enabled.
+    # `TLS_KEY_FILE` in env.
+    keyFile: "./certs/server.key"
+  # Enables HTTP/2 support. For browsers/clients this is relevant mostly with TLS.
+  # `ENABLE_HTTP2` in env. Default is true
+  enableHttp2: true
 discord:
   # Secret token for Discord bot.
   # You can create a bot on the Discord Developer Portal:
