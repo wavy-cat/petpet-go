@@ -74,7 +74,7 @@ func main() {
 			logger.Fatal("Error creating memory cacheInstance object", zap.Error(err))
 		}
 	case "fs":
-		cacheInstance, err = fs.NewFileSystemCache(cfg.FS.Path)
+		cacheInstance, err = fs.NewFileSystemCache(cfg.FS.Path, time.Duration(cfg.FS.TTL)*time.Second)
 		if err != nil {
 			logger.Fatal("Error creating filesystem cacheInstance object", zap.Error(err))
 		}

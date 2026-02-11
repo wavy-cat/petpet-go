@@ -37,6 +37,7 @@ type CacheMemoryConfig struct {
 
 type CacheFSConfig struct {
 	Path string `yaml:"path" env:"CACHE_FS_PATH" env-default:"./cache"`
+	TTL  uint   `yaml:"ttl" env:"CACHE_FS_TTL"`
 }
 
 type CacheS3Config struct {
