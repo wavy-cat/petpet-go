@@ -3,7 +3,7 @@ name: Docker Image
 on:
   release:
     types:
-      - published
+      - released
 
 env:
   REGISTRY: ghcr.io
