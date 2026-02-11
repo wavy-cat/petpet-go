@@ -9,9 +9,9 @@ COPY go* .
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o server github.com/wavy-cat/petpet-go/cmd/app
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o petpet-go github.com/wavy-cat/petpet-go/cmd/app
 
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13
 
 LABEL authors="WavyCat"
 LABEL org.opencontainers.image.source="https://github.com/wavy-cat/petpet-go"
@@ -19,9 +19,4 @@ LABEL org.opencontainers.image.source="https://github.com/wavy-cat/petpet-go"
 WORKDIR /app
 COPY --from=builder /src/app /app
 
-USER nonroot
-
-# Only for Docker Desktop
-EXPOSE 3000
-
-ENTRYPOINT ["./server"]
+ENTRYPOINT ["./petpet-go"]
