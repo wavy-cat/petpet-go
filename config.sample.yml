@@ -81,6 +81,7 @@ proxy:
   url: "http://127.0.0.1:10808"
 logger:
   # Logger format preset. Must be either `prod`, `dev`, `gcp` (GCP Cloud Logging format)
+  # `LOGGER_PRESET` in env.
   preset: "prod"
 customUpload:
   # Maximum upload size in bytes.
