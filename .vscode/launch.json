@@ -7,7 +7,13 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/app",
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "showLog": true,
+            "dlvToolPath": "${workspaceFolder}/bin/dlv",
+            "dlvDAPMode": true,
+            "env": {},
+            "args": [],
+            "trace": "verbose"
         }
     ]
 }
