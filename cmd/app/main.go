@@ -17,7 +17,7 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/custom"
-	"github.com/wavy-cat/petpet-go/internal/handler/http/ds_gif"
+	discord_handler "github.com/wavy-cat/petpet-go/internal/handler/http/discord"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
 	"github.com/wavy-cat/petpet-go/internal/service"
@@ -138,9 +138,10 @@ func main() {
 			discord.NewDiscordAvatarProvider(cfg.BotToken),
 			petpet.DefaultConfig,
 			quantizers.HierarhicalQuantizer{})
-		gifHandler := ds_gif.NewHandler(discordGifService, transport)
-		r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
-		r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
+		gifHandler := discord_handler.NewHandler(discordGifService, transport)
+
+		r.Get("/ds/{user_id}.gif", gifHandler)
+		r.Get("/ds/{user_id}", gifHandler)
 	}
 
 	if cfg.CustomUpload.Enable {
@@ -149,7 +150,8 @@ func main() {
 			petpet.DefaultConfig,
 			quantizers.HierarhicalQuantizer{})
 		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
-		r.Method(http.MethodPost, "/custom", uploadHandler)
+
+		r.Post("/custom", uploadHandler)
 	}
 
 	// Set up the server
