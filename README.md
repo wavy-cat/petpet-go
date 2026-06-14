@@ -4,56 +4,51 @@
 ![GitHub License](https://img.shields.io/github/license/wavy-cat/petpet-go?style=for-the-badge&labelColor=1A222E&color=242B36)
 ![GitHub repo size](https://img.shields.io/github/repo-size/wavy-cat/petpet-go?style=for-the-badge&logo=github&logoColor=white&labelColor=1A222E&color=242B36&cacheSeconds=0)
 
-A web service for generating petpet GIFs based on a Discord user's avatar.
-
----
+A web service for generating petpet GIFs based on a Discord user's avatar, written in Go.
 
 ## Usage
 
+### Discord avatar
+
 <kbd>GET</kbd> `/ds/{user_id}.gif`
 
-<kbd>POST</kbd> `/custom`
-
-### Path parameters
+#### Path parameters
 
 | Name        | Type      | Description           |
 |-------------|-----------|-----------------------|
 | `{user_id}` | Snowflake | The Discord user's ID |             
 
-### Query parameters
+#### Query parameters
 
 | Name       | Default | Type             | Description                                        |
 |------------|---------|------------------|----------------------------------------------------|
 | `delay`    | `4`     | Unsigned Integer | GIF speed. Bigger is slower                        |
 | `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers) |
 
-### Upload (POST /custom)
+### Custom upload
 
-Send a `multipart/form-data` request with a file field named `image` containing a PNG or JPEG.
-The upload is limited to 5MB and a maximum of 1 MP.
+<kbd>POST</kbd> `/custom`
+
+Send a `multipart/form-data` request with a file field named `image` containing a PNG, JPEG, WebP or AVIF.
+
+The upload is limited to 5MB and a maximum of 1 MP (you can reconfigure it).
 
 ## Getting started
 
-* Using Docker:
+* Static binaries available as [releases](https://github.com/wavy-cat/petpet-go/releases)
+* [GHCR](https://github.com/wavy-cat/petpet-go/pkgs/container/petpet-go) or `docker pull ghcr.io/wavy-cat/petpet-go` (see [Compose](compose.yml) example)
 
-  `docker run ghcr.io/wavy-cat/petpet-go`
-
-* Using binaries:
-
-  Download the [latest release](https://github.com/wavy-cat/petpet-go/releases/latest) and run it.
-
-* Compiling (you need [Go compiler](https://go.dev/dl/)):
-
-  `go run github.com/wavy-cat/petpet-go/cmd/app`
+> [!NOTE]
+> The Discord bot sends preview requests from the `us-east1` GCP region (South Carolina, US). To reduce network latency, choose server locations close to it. If using a Cloudflare proxy, the nearest Cloudflare location is ATL (Atlanta, US).
 
 ## Configuration
 
 Currently, config parameters can be specified either in the `config.yml` file or via environment variables.
 
-Look at the [sample config](config.sample.yml) with comments (including environment variable names)
+Look at the [configuration reference](config.sample.yml) with comments (including environment variable names).
 
 ## PetPet in other languages
 
 * **Python**: [nakidai/petthecord](https://github.com/nakidai/petthecord)
-* **Rust**: [messengernew/petpet-api](https://github.com/messengernew/petpet-api)
+* **Rust**: [mitsuki-kagamin/petpet-api](https://github.com/mitsuki-kagamin/petpet-api)
 * **C**: [nakidai/cptc](https://github.com/nakidai/cptc)
