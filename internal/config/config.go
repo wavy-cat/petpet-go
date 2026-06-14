@@ -1,12 +1,5 @@
 package config
 
-import (
-	"errors"
-	"io/fs"
-
-	"github.com/ilyakaznacheev/cleanenv"
-)
-
 type ServerHeartbeat struct {
 	Enable bool   `yaml:"enable" env:"HEARTBEAT_ENABLE" env-default:"false"`
 	Path   string `yaml:"path" env:"HEARTBEAT_PATH" env-default:"/ping"`
@@ -36,7 +29,8 @@ type Server struct {
 }
 
 type Discord struct {
-	BotToken string `yaml:"botToken" env:"BOT_TOKEN" env-required:"true"`
+	Enable   bool   `yaml:"enable" env:"DISCORD_ENABLE" env-default:"true"`
+	BotToken string `yaml:"botToken" env:"BOT_TOKEN"`
 }
 
 type CacheMemoryConfig struct {
@@ -72,6 +66,7 @@ type Logger struct {
 }
 
 type CustomUpload struct {
+	Enable        bool   `yaml:"enable" env:"CUSTOM_UPLOAD_ENABLE" env-default:"true"`
 	MaxUploadSize uint64 `yaml:"maxUploadSize" env:"CUSTOM_MAX_UPLOAD_SIZE" env-default:"5242880"`
 	MaxPixelCount uint   `yaml:"maxPixelCount" env:"CUSTOM_MAX_PIXEL_COUNT" env-default:"1000000"`
 }
@@ -83,28 +78,4 @@ type Config struct {
 	Proxy
 	Logger
 	CustomUpload `yaml:"customUpload"`
-}
-
-func GetYMLConfig(path string) (Config, error) {
-	var cfg Config
-	return cfg, cleanenv.ReadConfig(path, &cfg)
-}
-
-func GetEnvConfig() (Config, error) {
-	var cfg Config
-	return cfg, cleanenv.ReadEnv(&cfg)
-}
-
-func GetConfig(path string) (Config, error) {
-	var pathError *fs.PathError
-
-	cfg, err := GetYMLConfig(path)
-	if errors.As(err, &pathError) {
-		cfg, err = GetEnvConfig()
-	}
-	if err != nil {
-		return Config{}, err
-	}
-
-	return cfg, nil
 }

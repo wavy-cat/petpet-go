@@ -129,18 +129,28 @@ func main() {
 		}
 	})
 
-	// Add Discord service
-	gifService := service.NewGIFService(cacheInstance,
-		discord.NewDiscordAvatarProvider(cfg.BotToken),
-		petpet.DefaultConfig,
-		quantizers.HierarhicalQuantizer{})
+	if cfg.Discord.Enable {
+		if cfg.BotToken == "" {
+			logger.Fatal("Discord bot token is required when Discord is enabled")
+		}
 
-	gifHandler := ds_gif.NewHandler(gifService, transport)
-	r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
-	r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
+		discordGifService := service.NewGIFService(cacheInstance,
+			discord.NewDiscordAvatarProvider(cfg.BotToken),
+			petpet.DefaultConfig,
+			quantizers.HierarhicalQuantizer{})
+		gifHandler := ds_gif.NewHandler(discordGifService, transport)
+		r.Method(http.MethodGet, "/ds/{user_id}.gif", gifHandler)
+		r.Method(http.MethodGet, "/ds/{user_id}", gifHandler)
+	}
 
-	uploadHandler := custom.NewHandler(gifService, cfg.CustomUpload)
-	r.Method(http.MethodPost, "/custom", uploadHandler)
+	if cfg.CustomUpload.Enable {
+		customGifService := service.NewGIFService(cacheInstance,
+			nil,
+			petpet.DefaultConfig,
+			quantizers.HierarhicalQuantizer{})
+		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
+		r.Method(http.MethodPost, "/custom", uploadHandler)
+	}
 
 	// Set up the server
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)

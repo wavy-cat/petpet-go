@@ -45,10 +45,14 @@ server:
   # `ENABLE_HTTP2` in env. Default is true
   enableHttp2: true
 discord:
+  # Enables Discord avatar endpoints: /ds/{user_id} and /ds/{user_id}.gif
+  # `DISCORD_ENABLE` in env. Default is true
+  enable: true
   # Secret token for Discord bot.
+  # Required only when Discord is enabled.
   # You can create a bot on the Discord Developer Portal:
   # https://discord.com/developers/applications
-  # `BOT_TOKEN` in env. Required parameter!
+  # `BOT_TOKEN` in env.
   botToken: "your bot token"
 # The cache is used to store previously generated GIFs instead of re-generating them.
 # Disabled by default
@@ -102,6 +106,9 @@ logger:
   # `LOGGER_PRESET` in env.
   preset: "prod"
 customUpload:
+  # Enables custom image upload endpoint: /custom
+  # `CUSTOM_UPLOAD_ENABLE` in env. Default is true
+  enable: true
   # Maximum upload size in bytes.
   # `CUSTOM_MAX_UPLOAD_SIZE` in env. Default is 5242880 (5MB)
   maxUploadSize: 5242880
