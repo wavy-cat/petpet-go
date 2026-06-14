@@ -7,7 +7,6 @@ import (
 	_ "image/png"
 	"net/http"
 
-	_ "github.com/gen2brain/avif"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
@@ -60,7 +59,7 @@ func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) ht
 
 		img, _, err := image.Decode(file)
 		if err != nil {
-			if err := responses.RespondSoftError(w, "Unsupported image format. Please upload a PNG, JPEG, WebP, or AVIF."); err != nil {
+			if err := responses.RespondSoftError(w, "Unsupported image format. Please upload a PNG, JPEG, or WebP."); err != nil {
 				logger.Error("Error sending response", zap.Error(err))
 			}
 			return

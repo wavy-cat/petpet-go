@@ -8,7 +8,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.20
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.19
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.102.2
-	github.com/gen2brain/avif v0.4.4
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
@@ -34,9 +33,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.3 // indirect
 	github.com/aws/smithy-go v1.26.0 // indirect
-	github.com/ebitengine/purego v0.8.3 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/tetratelabs/wazero v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect

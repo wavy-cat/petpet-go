@@ -29,7 +29,7 @@ A web service for generating petpet GIFs based on a Discord user's avatar, writt
 
 <kbd>POST</kbd> `/custom`
 
-Send a `multipart/form-data` request with a file field named `image` containing a PNG, JPEG, WebP or AVIF.
+Send a `multipart/form-data` request with a file field named `image` containing a PNG, JPEG or WebP.
 
 The upload is limited to 5MB and a maximum of 1 MP (you can reconfigure it).
 
