@@ -7,12 +7,14 @@ import (
 	_ "image/png"
 	"net/http"
 
+	_ "github.com/gen2brain/avif"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
+	_ "golang.org/x/image/webp"
 )
 
 const uploadFormName = "image"
@@ -68,7 +70,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		if err := responses.RespondSoftError(w, "Unsupported image format. Please upload a PNG or JPEG."); err != nil {
+		if err := responses.RespondSoftError(w, "Unsupported image format. Please upload a PNG, JPEG, WebP, or AVIF."); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 		return
