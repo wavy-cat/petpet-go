@@ -31,7 +31,7 @@ func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
 
 	client := &http.Client{}
 
-	transport, ok := ctx.Value("transport").(*http.Transport)
+	transport, ok := ctx.Value(TransportKey).(*http.Transport)
 	if ok && transport != nil {
 		client.Transport = transport
 	}
