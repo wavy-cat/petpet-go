@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type ServerHeartbeat struct {
 	Enable bool   `yaml:"enable" env:"HEARTBEAT_ENABLE" env-default:"false"`
 	Path   string `yaml:"path" env:"HEARTBEAT_PATH" env-default:"/ping"`
@@ -22,6 +24,9 @@ type Server struct {
 	Host            string          `yaml:"host" env:"HOST"`
 	Port            uint16          `yaml:"port" env:"PORT" env-default:"3000"`
 	ShutdownTimeout uint            `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
+	WriteTimeout    time.Duration   `yaml:"writeTimeout" env:"WRITE_TIMEOUT" env-default:"15s"`
+	ReadTimeout     time.Duration   `yaml:"readTimeout" env:"READ_TIMEOUT" env-default:"15s"`
+	IdleTimeout     time.Duration   `yaml:"idleTimeout" env:"IDLE_TIMEOUT" env-default:"60s"`
 	Heartbeat       ServerHeartbeat `yaml:"heartbeat"`
 	Throttle        ServerThrottle  `yaml:"throttle"`
 	TLS             ServerTLS       `yaml:"tls"`

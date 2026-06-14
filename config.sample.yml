@@ -8,6 +8,15 @@ server:
   # Timeout in milliseconds for graceful shutdown
   # `SHUTDOWN_TIMEOUT` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 5000
   shutdownTimeout: 5000
+  # Timeout for writing responses.
+  # `WRITE_TIMEOUT` in env. Default is 15s
+  writeTimeout: 15s
+  # Timeout for reading requests.
+  # `READ_TIMEOUT` in env. Default is 15s
+  readTimeout: 15s
+  # Timeout for idle connections.
+  # `IDLE_TIMEOUT` in env. Default is 60s
+  idleTimeout: 60s
   # Endpoint like /ping for load balancers or uptime bots
   # Read more: https://go-chi.io/#/pages/middleware?id=heartbeat
   heartbeat:

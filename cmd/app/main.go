@@ -158,9 +158,9 @@ func main() {
 	var serverAddr = fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
 		Addr:         serverAddr,
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
+		WriteTimeout: cfg.WriteTimeout,
+		ReadTimeout:  cfg.ReadTimeout,
+		IdleTimeout:  cfg.IdleTimeout,
 		Handler:      r,
 	}
 
