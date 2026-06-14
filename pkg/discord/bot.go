@@ -9,11 +9,20 @@ import (
 )
 
 type Bot struct {
-	token string // Secret authorization token
+	token  string // Secret authorization token
+	client *http.Client
 }
 
 func NewBot(token string) *Bot {
-	return &Bot{token: token}
+	return NewBotWithClient(token, http.DefaultClient)
+}
+
+func NewBotWithClient(token string, client *http.Client) *Bot {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	return &Bot{token: token, client: client}
 }
 
 func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
@@ -28,14 +37,7 @@ func (b Bot) NewUserById(ctx context.Context, id string) (*User, error) {
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "application/json")
 
-	client := &http.Client{}
-
-	transport, ok := ctx.Value(TransportKey).(*http.Transport)
-	if ok && transport != nil {
-		client.Transport = transport
-	}
-
-	resp, err := client.Do(req)
+	resp, err := b.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

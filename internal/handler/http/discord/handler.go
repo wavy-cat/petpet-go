@@ -1,12 +1,10 @@
 package discord
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/pkg/discord"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
@@ -15,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewHandler(gifService service.GIFService, transport *http.Transport) http.HandlerFunc {
+func NewHandler(gifService service.GIFService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := r.Context().Value(middleware.LoggerKey).(*zap.Logger)
 
@@ -56,8 +54,7 @@ func NewHandler(gifService service.GIFService, transport *http.Transport) http.H
 		}
 
 		// Calling the service to generate GIF
-		ctx := context.WithValue(r.Context(), discord.TransportKey, transport)
-		gif, err := gifService.GetOrGenerateGif(ctx, userId, delay)
+		gif, err := gifService.GetOrGenerateGif(r.Context(), userId, delay)
 		if err != nil {
 			logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userId))
 

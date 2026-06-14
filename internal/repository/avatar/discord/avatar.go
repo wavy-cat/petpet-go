@@ -3,12 +3,14 @@ package discord
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/wavy-cat/petpet-go/pkg/discord"
 )
 
 type userAvatar struct {
-	user *discord.User
+	user   *discord.User
+	client *http.Client
 }
 
 func (a userAvatar) GetId(_ context.Context) (string, error) {
@@ -24,5 +26,5 @@ func (a userAvatar) GetImage(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("avatar not exists")
 	}
 
-	return a.user.GetAvatar(ctx)
+	return a.user.GetAvatarWithClient(ctx, a.client)
 }

@@ -45,6 +45,8 @@ The upload is limited to 5MB and a maximum of 1 MP (you can reconfigure it).
 
 Currently, config parameters can be specified either in the `config.yml` file or via environment variables.
 
+Outbound HTTP proxy settings are handled by Go's standard environment variables: `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
+
 Look at the [configuration reference](config.sample.yml) with comments (including environment variable names).
 
 ## PetPet in other languages

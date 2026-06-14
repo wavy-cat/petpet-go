@@ -16,6 +16,14 @@ type User struct {
 }
 
 func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
+	return u.GetAvatarWithClient(ctx, http.DefaultClient)
+}
+
+func (u User) GetAvatarWithClient(ctx context.Context, client *http.Client) ([]byte, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
 	if u.Avatar == nil {
 		return nil, errors.New("avatar not found")
 	}
@@ -28,13 +36,6 @@ func (u User) GetAvatar(ctx context.Context) ([]byte, error) {
 
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Accept", "image/png")
-
-	client := &http.Client{}
-
-	transport, ok := ctx.Value(TransportKey).(*http.Transport)
-	if ok && transport != nil {
-		client.Transport = transport
-	}
 
 	resp, err := client.Do(req)
 	if err != nil {

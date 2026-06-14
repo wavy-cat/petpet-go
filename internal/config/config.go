@@ -62,10 +62,6 @@ type Cache struct {
 	S3      CacheS3Config     `yaml:"s3"`
 }
 
-type Proxy struct {
-	URL string `yaml:"url" env:"PROXY_URL"`
-}
-
 type Logger struct {
 	Preset LoggerPreset `yaml:"preset" env:"LOGGER_PRESET"`
 }
@@ -80,7 +76,6 @@ type Config struct {
 	Server
 	Discord
 	Cache
-	Proxy
 	Logger
 	CustomUpload `yaml:"customUpload"`
 }

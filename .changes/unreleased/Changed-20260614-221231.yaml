@@ -1,0 +1,3 @@
+kind: Changed
+body: Reuse a shared HTTP client for Discord requests
+time: 2026-06-14T22:12:31.720432989+05:00

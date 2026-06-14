@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -94,18 +93,6 @@ func main() {
 		logger.Warn("Passed an incorrect storage type for the cacheInstance. The cacheInstance will be disabled")
 	}
 
-	// Add proxy
-	var transport *http.Transport
-
-	if cfg.URL != "" {
-		proxyURL, err := url.Parse(cfg.URL)
-		if err != nil {
-			logger.Fatal("Failed to parse proxy URL.", zap.Error(err))
-		} else {
-			transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
-		}
-	}
-
 	// Set up routing
 	r := chi.NewRouter()
 
@@ -134,11 +121,12 @@ func main() {
 			logger.Fatal("Discord bot token is required when Discord is enabled")
 		}
 
+		discordClient := &http.Client{Transport: http.DefaultTransport.(*http.Transport).Clone()}
 		discordGifService := service.NewGIFService(cacheInstance,
-			discord.NewDiscordAvatarProvider(cfg.BotToken),
+			discord.NewDiscordAvatarProvider(cfg.BotToken, discordClient),
 			petpet.DefaultConfig,
 			quantizers.HierarhicalQuantizer{})
-		gifHandler := discord_handler.NewHandler(discordGifService, transport)
+		gifHandler := discord_handler.NewHandler(discordGifService)
 
 		r.Get("/ds/{user_id}.gif", gifHandler)
 		r.Get("/ds/{user_id}", gifHandler)
