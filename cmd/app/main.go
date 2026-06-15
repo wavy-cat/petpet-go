@@ -128,6 +128,8 @@ func main() {
 			quantizers.HierarhicalQuantizer{})
 		gifHandler := discord_handler.NewHandler(discordGifService)
 
+		r.Get("/discord/{user_id}.gif", gifHandler)
+		r.Get("/discord/{user_id}", gifHandler)
 		r.Get("/ds/{user_id}.gif", gifHandler)
 		r.Get("/ds/{user_id}", gifHandler)
 	}
@@ -140,6 +142,7 @@ func main() {
 		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
 
 		r.Post("/custom", uploadHandler)
+		r.Post("/c", uploadHandler)
 	}
 
 	// Set up the server

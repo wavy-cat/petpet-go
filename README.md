@@ -10,7 +10,7 @@ A web service for generating petpet GIFs based on a Discord user's avatar, writt
 
 ### Discord avatar
 
-<kbd>GET</kbd> `/ds/{user_id}.gif`
+<kbd>GET</kbd> `/discord/{user_id}.gif` or `/ds/{user_id}.gif`
 
 #### Path parameters
 
@@ -27,7 +27,7 @@ A web service for generating petpet GIFs based on a Discord user's avatar, writt
 
 ### Custom upload
 
-<kbd>POST</kbd> `/custom`
+<kbd>POST</kbd> `/custom` or `/c`
 
 Send a `multipart/form-data` request with a file field named `image` containing a PNG, JPEG or WebP.
 
