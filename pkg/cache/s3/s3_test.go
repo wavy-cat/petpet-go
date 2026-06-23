@@ -65,8 +65,8 @@ func TestS3CachePushAndPull(t *testing.T) {
 	t.Parallel()
 
 	s3Cache := newTestS3Cache(t, "bucket", func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPut:
+		switch r.Method {
+		case http.MethodPut:
 			if got, want := r.URL.Path, "/bucket/key"; got != want {
 				t.Fatalf("PUT path = %q, want %q", got, want)
 			}
@@ -78,7 +78,7 @@ func TestS3CachePushAndPull(t *testing.T) {
 				t.Fatalf("PUT body = %q, want %q", body, []byte("value"))
 			}
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodGet:
+		case http.MethodGet:
 			if got, want := r.URL.Path, "/bucket/key"; got != want {
 				t.Fatalf("GET path = %q, want %q", got, want)
 			}
