@@ -187,7 +187,7 @@ func TestGetAvatar(t *testing.T) {
 			if req.Method != http.MethodGet {
 				return nil, fmt.Errorf("unexpected method %s", req.Method)
 			}
-			if req.URL.String() != baseCDNURL+"/avatars/123/hash.png?size=128" {
+			if req.URL.String() != baseCDNURL+"/avatars/123/hash.webp?size=128" {
 				return nil, fmt.Errorf("unexpected URL %s", req.URL.String())
 			}
 			if req.Header.Get("User-Agent") != userAgent {
