@@ -28,7 +28,7 @@ func (u User) GetAvatarWithClient(ctx context.Context, client *http.Client) ([]b
 		return nil, errors.New("avatar not found")
 	}
 
-	url := fmt.Sprintf("%s/avatars/%s/%s.png?size=128", baseCDNURL, u.ID, *u.Avatar)
+	url := fmt.Sprintf("%s/avatars/%s/%s.webp?size=128", baseCDNURL, u.ID, *u.Avatar)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
