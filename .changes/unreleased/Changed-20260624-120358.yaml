@@ -1,3 +1,0 @@
-kind: Changed
-body: Changed Discord avatar format to WebP to reduce image size in cache and the volume of transferred traffic.
-time: 2026-06-24T12:03:58.698107656+05:00
