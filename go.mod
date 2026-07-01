@@ -13,7 +13,7 @@ require (
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	go.uber.org/zap v1.28.0
-	golang.org/x/image v0.42.0
+	golang.org/x/image v0.43.0
 )
 
 require (
