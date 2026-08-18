@@ -18,8 +18,8 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/handler/http/custom"
 	discord_handler "github.com/wavy-cat/petpet-go/internal/handler/http/discord"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/internal/repository/avatar/discord"
 	"github.com/wavy-cat/petpet-go/internal/service"
+	"github.com/wavy-cat/petpet-go/pkg/avatar_providers/discord"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
@@ -122,9 +122,8 @@ func main() {
 			logger.Fatal("Discord bot token is required when Discord is enabled")
 		}
 
-		discordClient := &http.Client{Transport: http.DefaultTransport.(*http.Transport).Clone()}
 		discordGifService := service.NewGIFService(cacheInstance,
-			discord.NewDiscordAvatarProvider(cfg.BotToken, discordClient),
+			discord.NewProvider(cfg.BotToken),
 			petpet.DefaultConfig,
 			quantizers.HierarhicalQuantizer{})
 		gifHandler := discord_handler.NewHandler(discordGifService)

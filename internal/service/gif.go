@@ -9,8 +9,8 @@ import (
 	"image/png"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/internal/repository/avatar"
 
+	"github.com/wavy-cat/petpet-go/pkg/avatar_providers"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"go.uber.org/zap"
@@ -25,10 +25,10 @@ type gifService struct {
 	config    petpet.Config
 	quantizer petpet.Quantizer
 	cache     cache.BytesCache
-	provider  avatar.Provider
+	provider  avatar_providers.Provider
 }
 
-func NewGIFService(cache cache.BytesCache, provider avatar.Provider,
+func NewGIFService(cache cache.BytesCache, provider avatar_providers.Provider,
 	config petpet.Config, quantizer petpet.Quantizer) GIFService {
 	return &gifService{
 		config:    config,
@@ -116,7 +116,7 @@ func (s gifService) GenerateGifFromImage(ctx context.Context, img image.Image, d
 	return buf.Bytes(), nil
 }
 
-func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatar.UserAvatar) ([]byte, error) {
+func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatar_providers.UserAvatar) ([]byte, error) {
 	avatarId, err := userAvatar.GetId(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving avatar id: %v", err)
