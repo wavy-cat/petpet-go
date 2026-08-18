@@ -36,7 +36,7 @@ The upload is limited to 5MB and a maximum of 1 MP (you can reconfigure it).
 ## Getting started
 
 * Static binaries available as [releases](https://github.com/wavy-cat/petpet-go/releases)
-* [GHCR](https://github.com/wavy-cat/petpet-go/pkgs/container/petpet-go) or `docker pull ghcr.io/wavy-cat/petpet-go` (see [Compose](compose.yml) example)
+* [GHCR](https://github.com/wavy-cat/petpet-go/pkgs/container/petpet-go) or `docker pull ghcr.io/wavy-cat/petpet-go`
 
 > [!NOTE]
 > The Discord bot sends preview requests from the `us-east1` GCP region (South Carolina, US). To reduce network latency, choose server locations close to it. If using a Cloudflare proxy, the nearest Cloudflare location is ATL (Atlanta, US).
@@ -47,7 +47,7 @@ Currently, config parameters can be specified either in the `config.yml` file or
 
 Outbound HTTP proxy settings are handled by Go's standard environment variables: `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY`.
 
-Look at the [configuration reference](config.sample.yml) with comments (including environment variable names).
+Look at the [configuration reference](config.sample.yaml) with comments (including environment variable names).
 
 ## PetPet in other languages
 

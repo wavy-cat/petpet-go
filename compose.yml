@@ -1,8 +1,0 @@
-services:
-  petpet:
-    image: ghcr.io/wavy-cat/petpet-go
-    environment:
-      - BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
-      - LOGGER_PRESET=prod
-    ports:
-      - 3000:3000/tcp

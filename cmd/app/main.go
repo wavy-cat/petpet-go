@@ -34,7 +34,7 @@ const serviceName = "petpet"
 
 func main() {
 	// Get config
-	cfg, err := config.GetConfig("config.yml")
+	cfg, err := config.GetConfig("config.yaml")
 	if err != nil {
 		panic(err)
 	}

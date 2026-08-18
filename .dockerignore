@@ -4,5 +4,5 @@
 .github
 README.md
 LICENSE
-config.yml
-config.sample.yml
+config.yaml
+config.sample.yaml

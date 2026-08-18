@@ -12,8 +12,7 @@ on:
       - ".goreleaser.yaml"
       - ".changes/**"
       - ".gitignore"
-      - "docker-compose.yml"
-      - "config.sample.yml"
+      - "config.sample.yaml"
       - ".vscode/**"
   pull_request:
     branches:
