@@ -89,8 +89,9 @@ func main() {
 			logger.Fatal("Error creating S3 cacheInstance object", zap.Error(err))
 		}
 	case "":
+		logger.Info("The storage type is not specified. Caching will be disabled")
 	default:
-		logger.Warn("Passed an incorrect storage type for the cacheInstance. The cacheInstance will be disabled")
+		logger.Warn("Passed an incorrect storage type for the cacheInstance. Caching will be disabled")
 	}
 
 	// Set up routing
