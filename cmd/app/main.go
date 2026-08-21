@@ -14,16 +14,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/wavy-cat/petpet-go/internal/cachefactory"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/custom"
 	discord_handler "github.com/wavy-cat/petpet-go/internal/handler/http/discord"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/avatar_providers/discord"
-	"github.com/wavy-cat/petpet-go/pkg/cache"
-	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
-	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
-	"github.com/wavy-cat/petpet-go/pkg/cache/s3"
 	"github.com/wavy-cat/petpet-go/pkg/logger-presets/gcp"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
@@ -66,33 +63,20 @@ func main() {
 	}(logger)
 
 	// Create a cache instance
-	var cacheInstance cache.BytesCache
-
-	switch cfg.Storage {
-	case "memory":
-		cacheInstance, err = memory.NewLRUCache(cfg.Memory.Capacity)
-		if err != nil {
-			logger.Fatal("Error creating memory cacheInstance object", zap.Error(err))
-		}
-	case "fs":
-		cacheInstance, err = fs.NewFileSystemCache(cfg.FS.Path, time.Duration(cfg.FS.TTL)*time.Second)
-		if err != nil {
-			logger.Fatal("Error creating filesystem cacheInstance object", zap.Error(err))
-		}
-	case "s3":
-		if cfg.S3.Bucket == "" {
-			logger.Fatal("S3 bucket name is required for S3 cacheInstance")
-		}
-
-		cacheInstance, err = s3.NewS3Cache(cfg.S3.Bucket, cfg.S3.Endpoint, cfg.S3.Region, cfg.S3.AccessKey, cfg.S3.SecretKey)
-		if err != nil {
-			logger.Fatal("Error creating S3 cacheInstance object", zap.Error(err))
-		}
-	case "":
+	if cfg.Storage == "" {
 		logger.Info("The storage type is not specified. Caching will be disabled")
-	default:
-		logger.Warn("Passed an incorrect storage type for the cacheInstance. Caching will be disabled")
 	}
+
+	cacheInstance, err := cachefactory.New(cfg.Cache)
+	if err != nil {
+		logger.Fatal("Error creating cache", zap.Error(err))
+	}
+	defer func() {
+		logger.Info("Closing the cache...")
+		if err := cacheInstance.Close(); err != nil {
+			logger.Error("Error closing cache", zap.Error(err))
+		}
+	}()
 
 	// Set up routing
 	r := chi.NewRouter()
@@ -193,11 +177,6 @@ func main() {
 	logger.Info("Shutting down the server...")
 	if err := srv.Shutdown(ctx); err != nil {
 		logger.Fatal("Server forced to shutdown:", zap.Error(err))
-	}
-
-	logger.Info("Closing the cache...")
-	if err := cacheInstance.Close(); err != nil {
-		logger.Error("Error closing cache", zap.Error(err), zap.String("cache_type", cfg.Storage))
 	}
 
 	logger.Info("Server exited properly")
