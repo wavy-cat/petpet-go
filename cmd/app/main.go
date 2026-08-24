@@ -20,7 +20,7 @@ import (
 	discord_handler "github.com/wavy-cat/petpet-go/internal/handler/http/discord"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/service"
-	"github.com/wavy-cat/petpet-go/pkg/avatar_providers/discord"
+	"github.com/wavy-cat/petpet-go/pkg/avatarproviders/discord"
 	"github.com/wavy-cat/petpet-go/pkg/logger-presets/gcp"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"

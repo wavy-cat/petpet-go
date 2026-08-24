@@ -1,9 +1,10 @@
 package quantizers
 
 import (
-	"github.com/Nykakin/quantize"
 	"image"
 	"image/color"
+
+	"github.com/Nykakin/quantize"
 )
 
 type HierarhicalQuantizer struct{}

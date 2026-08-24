@@ -1,4 +1,4 @@
-package responses
+package responses_test
 
 import (
 	"bytes"
@@ -6,14 +6,17 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/wavy-cat/petpet-go/pkg/responses"
 )
 
 func TestRespondContent(t *testing.T) {
+	t.Parallel()
 	w := httptest.NewRecorder()
 	content := []byte("test content")
 	contentType := "text/plain"
 
-	_, err := RespondContent(w, contentType, content)
+	_, err := responses.RespondContent(w, contentType, content)
 	if err != nil {
 		t.Errorf("RespondContent returned error: %v", err)
 	}
@@ -28,9 +31,10 @@ func TestRespondContent(t *testing.T) {
 }
 
 func TestRespondError(t *testing.T) {
+	t.Parallel()
 	w := httptest.NewRecorder()
 
-	err := RespondError(w)
+	err := responses.RespondError(w)
 	if err != nil {
 		t.Errorf("RespondError returned error: %v", err)
 	}
@@ -53,10 +57,11 @@ func TestRespondError(t *testing.T) {
 }
 
 func TestRespondSoftError(t *testing.T) {
+	t.Parallel()
 	w := httptest.NewRecorder()
 	const details = "test error details"
 
-	err := RespondSoftError(w, details)
+	err := responses.RespondSoftError(w, details)
 	if err != nil {
 		t.Errorf("RespondSoftError returned error: %v", err)
 	}

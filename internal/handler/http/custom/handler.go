@@ -1,10 +1,13 @@
 package custom
 
 import (
+	"errors"
 	"fmt"
 	"image"
-	_ "image/jpeg"
-	_ "image/png"
+	_ "image/jpeg" // Register the JPEG decoder for image.Decode.
+	_ "image/png"  // Register the PNG decoder for image.Decode.
+	"io"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/wavy-cat/petpet-go/internal/config"
@@ -13,79 +16,130 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
-	_ "golang.org/x/image/webp"
+	_ "golang.org/x/image/webp" // Register the WebP decoder for image.Decode.
 )
 
 const uploadFormName = "image"
 
+var errNoUploadFile = errors.New("no upload file")
+
 func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		logger := r.Context().Value(middleware.LoggerKey).(*zap.Logger)
+		logger, ok := middleware.LoggerFromContext(r.Context())
+		if !ok {
+			http.Error(w, "missing request logger", http.StatusInternalServerError)
+			return
+		}
 
 		delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 		if err != nil {
-			if err := responses.RespondSoftError(w, "Incorrect delay"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+			responses.RespondSoftError(w, "Incorrect delay")
 			return
 		}
 
-		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
-		w.Header().Set("Pragma", "no-cache")
-		w.Header().Set("Expires", "0")
-
-		maxUploadSize := int64(uploadCfg.MaxUploadSize)
-		r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
-		if err := r.ParseMultipartForm(maxUploadSize); err != nil {
-			if err := responses.RespondSoftError(w, fmt.Sprintf("Failed to parse upload. Make sure the file is smaller than %d bytes.", uploadCfg.MaxUploadSize)); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
-			return
-		}
-
-		file, _, err := r.FormFile(uploadFormName)
-		if err != nil {
-			if err := responses.RespondSoftError(w, "No image file was provided"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
-			return
-		}
-		defer func() {
-			if err := file.Close(); err != nil {
-				logger.Error("Error closing upload file", zap.Error(err))
-			}
-		}()
-
-		img, _, err := image.Decode(file)
-		if err != nil {
-			if err := responses.RespondSoftError(w, "Unsupported image format. Please upload a PNG, JPEG, or WebP."); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
-			return
-		}
-
-		bounds := img.Bounds()
-		pixelCount := int64(bounds.Dx()) * int64(bounds.Dy())
-		if pixelCount > int64(uploadCfg.MaxPixelCount) {
-			if err := responses.RespondSoftError(w, fmt.Sprintf("Image is too large. Maximum allowed size is %d pixels.", uploadCfg.MaxPixelCount)); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+		utils.SetNoCacheHeaders(w)
+		img, message := decodeUploadedImage(w, r, uploadCfg, logger)
+		if message != "" {
+			responses.RespondSoftError(w, message)
 			return
 		}
 
 		gif, err := gifService.GenerateGifFromImage(r.Context(), img, delay)
 		if err != nil {
 			logger.Error("Error during GIF generation", zap.Error(err))
-			if err := responses.RespondSoftError(w, "Failed to generate GIF"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+			responses.RespondSoftError(w, "Failed to generate GIF")
 			return
 		}
 
-		_, err = responses.RespondContent(w, "image/gif", gif)
-		if err != nil {
+		if _, err := responses.RespondContent(w, "image/gif", gif); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 	}
+}
+
+func decodeUploadedImage(
+	w http.ResponseWriter,
+	r *http.Request,
+	uploadCfg config.CustomUpload,
+	logger *zap.Logger,
+) (image.Image, string) {
+	maxUploadSize := boundedUploadSize(uploadCfg.MaxUploadSize)
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
+
+	file, err := uploadedFile(r)
+	if errors.Is(err, errNoUploadFile) {
+		return nil, "No image file was provided"
+	}
+	if err != nil {
+		return nil, fmt.Sprintf(
+			"Failed to parse upload. Make sure the file is smaller than %d bytes.",
+			uploadCfg.MaxUploadSize,
+		)
+	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			logger.Error("Error closing upload file", zap.Error(err))
+		}
+	}()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			return nil, fmt.Sprintf(
+				"Failed to parse upload. Make sure the file is smaller than %d bytes.",
+				uploadCfg.MaxUploadSize,
+			)
+		}
+
+		return nil, "Unsupported image format. Please upload a PNG, JPEG, or WebP."
+	}
+	if exceedsPixelLimit(img, uint64(uploadCfg.MaxPixelCount)) {
+		return nil, fmt.Sprintf("Image is too large. Maximum allowed size is %d pixels.", uploadCfg.MaxPixelCount)
+	}
+
+	return img, ""
+}
+
+func uploadedFile(r *http.Request) (*multipart.Part, error) {
+	reader, err := r.MultipartReader()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		part, err := reader.NextPart()
+		if err == io.EOF {
+			return nil, errNoUploadFile
+		}
+		if err != nil {
+			return nil, err
+		}
+		if part.FormName() == uploadFormName {
+			return part, nil
+		}
+		if err := part.Close(); err != nil {
+			return nil, err
+		}
+	}
+}
+
+func boundedUploadSize(size uint64) int64 {
+	const maxInt64 = uint64(1<<63 - 1)
+	if size > maxInt64 {
+		return int64(maxInt64)
+	}
+
+	return int64(size)
+}
+
+func exceedsPixelLimit(img image.Image, maxPixelCount uint64) bool {
+	bounds := img.Bounds()
+	width, height := bounds.Dx(), bounds.Dy()
+	if width <= 0 || height <= 0 {
+		return false
+	}
+
+	pixelWidth, pixelHeight := uint64(width), uint64(height)
+	return pixelWidth > maxPixelCount/pixelHeight
 }

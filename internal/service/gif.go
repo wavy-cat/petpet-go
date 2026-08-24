@@ -9,15 +9,14 @@ import (
 	"image/png"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-
-	"github.com/wavy-cat/petpet-go/pkg/avatar_providers"
+	"github.com/wavy-cat/petpet-go/pkg/avatarproviders"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"go.uber.org/zap"
 )
 
 type GIFService interface {
-	GetOrGenerateGif(ctx context.Context, userId string, delay int) ([]byte, error)
+	GetOrGenerateGif(ctx context.Context, userID string, delay int) ([]byte, error)
 	GenerateGifFromImage(ctx context.Context, img image.Image, delay int) ([]byte, error)
 }
 
@@ -25,10 +24,10 @@ type gifService struct {
 	config    petpet.Config
 	quantizer petpet.Quantizer
 	cache     cache.BytesCache
-	provider  avatar_providers.Provider
+	provider  avatarproviders.Provider
 }
 
-func NewGIFService(cacheInstance cache.BytesCache, provider avatar_providers.Provider,
+func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider,
 	config petpet.Config, quantizer petpet.Quantizer) GIFService {
 	if cacheInstance == nil {
 		cacheInstance = cache.NewNoop()
@@ -42,38 +41,30 @@ func NewGIFService(cacheInstance cache.BytesCache, provider avatar_providers.Pro
 	}
 }
 
-func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay int) ([]byte, error) {
-	// Getting the logger-presets
-	logger, ok := ctx.Value(middleware.LoggerKey).(*zap.Logger)
-	if !ok {
-		panic("missing logger-presets in gif service")
-	}
+func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay int) ([]byte, error) {
+	logger := loggerFromContext(ctx)
 
-	// Getting the user's avatar id
-	userAvatar, err := s.provider.GetUserAvatar(ctx, userId)
+	userAvatar, err := s.provider.GetUserAvatar(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving avatar: %v", err)
+		return nil, fmt.Errorf("error retrieving avatar: %w", err)
 	}
 
-	avatarId, err := userAvatar.GetId(ctx)
+	avatarID, err := userAvatar.GetID(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving avatar id: %v", err)
+		return nil, fmt.Errorf("error retrieving avatar id: %w", err)
 	}
 
-	// We check if the GIF is in the cache and if so, return it.
-	cacheName := fmt.Sprintf("%s-%d-gif", avatarId, delay)
-
-	cachedGif, err := s.cache.Pull(cacheName)
+	cacheName := fmt.Sprintf("%s-%d-gif", avatarID, delay)
+	cachedGIF, err := s.cache.Pull(cacheName)
 	if err == nil {
-		return cachedGif, nil
+		return cachedGIF, nil
 	}
 	if !errors.Is(err, cache.ErrNotExists) {
 		logger.Error("Error when pulling GIF from cache",
 			zap.Error(err),
-			zap.String("avatar_id", avatarId))
+			zap.String("avatar_id", avatarID))
 	}
 
-	// Getting the user's avatar
 	avatarImage, err := s.getAvatarImage(ctx, userAvatar)
 	if err != nil {
 		return nil, err
@@ -81,7 +72,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 
 	decodedImage, err := png.Decode(bytes.NewReader(avatarImage))
 	if err != nil {
-		return nil, fmt.Errorf("error decoding avatar image: %v", err)
+		return nil, fmt.Errorf("error decoding avatar image: %w", err)
 	}
 
 	data, err := s.GenerateGifFromImage(ctx, decodedImage, delay)
@@ -89,20 +80,27 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userId string, delay i
 		return nil, err
 	}
 
-	// Add a GIF to the cache
 	go func(cacheName string, data []byte) {
 		if err := s.cache.Push(cacheName, data); err != nil {
 			logger.Error("Error when pushing GIF to cache",
 				zap.Error(err),
-				zap.String("avatar_id", avatarId))
+				zap.String("avatar_id", avatarID))
 		}
 	}(cacheName, data)
 
 	return data, nil
 }
 
-func (s gifService) GenerateGifFromImage(ctx context.Context, img image.Image, delay int) ([]byte, error) {
-	_ = ctx
+func loggerFromContext(ctx context.Context) *zap.Logger {
+	logger, ok := middleware.LoggerFromContext(ctx)
+	if !ok {
+		panic("missing logger-presets in gif service")
+	}
+
+	return logger
+}
+
+func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, delay int) ([]byte, error) {
 	config := s.config
 	config.Delay = delay
 
@@ -116,35 +114,34 @@ func (s gifService) GenerateGifFromImage(ctx context.Context, img image.Image, d
 	return buf.Bytes(), nil
 }
 
-func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatar_providers.UserAvatar) ([]byte, error) {
-	avatarId, err := userAvatar.GetId(ctx)
+func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatarproviders.UserAvatar) ([]byte, error) {
+	logger := loggerFromContext(ctx)
+	avatarID, err := userAvatar.GetID(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving avatar id: %v", err)
+		return nil, fmt.Errorf("error retrieving avatar id: %w", err)
 	}
 
-	cacheName := fmt.Sprintf("avatar-%s", avatarId)
+	cacheName := fmt.Sprintf("avatar-%s", avatarID)
 	cached, err := s.cache.Pull(cacheName)
 	if err == nil {
 		return cached, nil
 	}
 	if !errors.Is(err, cache.ErrNotExists) {
-		logger := ctx.Value(middleware.LoggerKey).(*zap.Logger)
 		logger.Error("Error when pulling avatar from cache",
 			zap.Error(err),
-			zap.String("avatar_id", avatarId))
+			zap.String("avatar_id", avatarID))
 	}
 
 	avatarImage, err := userAvatar.GetImage(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving avatar id: %v", err)
+		return nil, fmt.Errorf("error retrieving avatar id: %w", err)
 	}
 
-	logger := ctx.Value(middleware.LoggerKey).(*zap.Logger)
 	go func(cacheName string, avatarImage []byte) {
 		if err := s.cache.Push(cacheName, avatarImage); err != nil {
 			logger.Error("Error when pushing avatar to cache",
 				zap.Error(err),
-				zap.String("avatar_id", avatarId))
+				zap.String("avatar_id", avatarID))
 		}
 	}(cacheName, avatarImage)
 

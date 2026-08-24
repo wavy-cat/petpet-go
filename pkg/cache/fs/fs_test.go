@@ -1,4 +1,4 @@
-package fs
+package fs_test
 
 import (
 	"errors"
@@ -6,19 +6,21 @@ import (
 	"time"
 
 	"github.com/wavy-cat/petpet-go/pkg/cache"
+	"github.com/wavy-cat/petpet-go/pkg/cache/fs"
 )
 
 func TestFileSystemCacheTTLRemovesExpiredFiles(t *testing.T) {
 	t.Parallel()
 
-	dir := t.TempDir()
-	fsc, err := NewFileSystemCache(dir, 100*time.Millisecond)
+	fsc, err := fs.NewFileSystemCache(t.TempDir(), 100*time.Millisecond)
 	if err != nil {
 		t.Fatalf("NewFileSystemCache() error = %v", err)
 	}
-	defer func() {
-		_ = fsc.Close()
-	}()
+	t.Cleanup(func() {
+		if err := fsc.Close(); err != nil {
+			t.Errorf("Close() error = %v", err)
+		}
+	})
 
 	if err := fsc.Push("expired-key", []byte("value")); err != nil {
 		t.Fatalf("Push() error = %v", err)
@@ -42,7 +44,7 @@ func TestFileSystemCacheTTLRemovesExpiredFiles(t *testing.T) {
 func TestFileSystemCacheClose(t *testing.T) {
 	t.Parallel()
 
-	fsc, err := NewFileSystemCache(t.TempDir(), 100*time.Millisecond)
+	fsc, err := fs.NewFileSystemCache(t.TempDir(), 100*time.Millisecond)
 	if err != nil {
 		t.Fatalf("NewFileSystemCache() error = %v", err)
 	}

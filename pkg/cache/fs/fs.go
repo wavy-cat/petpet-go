@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -25,7 +25,7 @@ type FileSystemCache struct {
 // NewFileSystemCache creates a new file system cache with the specified directory for storage.
 func NewFileSystemCache(cacheDir string, ttl time.Duration) (*FileSystemCache, error) {
 	if _, err := os.Stat(cacheDir); os.IsNotExist(err) {
-		err := os.MkdirAll(cacheDir, 0o755)
+		err := os.MkdirAll(cacheDir, 0o750)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (fsc *FileSystemCache) Push(key string, value []byte) error {
 	defer fsc.endOperation()
 
 	filePath := filepath.Join(fsc.cacheDir, key)
-	return os.WriteFile(filePath, value, 0o644)
+	return os.WriteFile(filePath, value, 0o600)
 }
 
 func (fsc *FileSystemCache) Pull(key string) ([]byte, error) {
@@ -72,7 +72,7 @@ func (fsc *FileSystemCache) Close() error {
 	fsc.mu.Lock()
 	if fsc.closed {
 		fsc.mu.Unlock()
-		return fmt.Errorf("cache is already closed")
+		return errors.New("cache is already closed")
 	}
 	fsc.closed = true
 	cleanerStop := fsc.cleanerStop
@@ -93,7 +93,7 @@ func (fsc *FileSystemCache) beginOperation() error {
 	defer fsc.mu.RUnlock()
 
 	if fsc.closed {
-		return fmt.Errorf("cache is closed")
+		return errors.New("cache is closed")
 	}
 
 	fsc.closingWg.Add(1)

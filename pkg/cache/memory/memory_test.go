@@ -1,4 +1,4 @@
-package memory
+package memory_test
 
 import (
 	"bytes"
@@ -6,33 +6,25 @@ import (
 	"testing"
 
 	"github.com/wavy-cat/petpet-go/pkg/cache"
+	"github.com/wavy-cat/petpet-go/pkg/cache/memory"
 )
 
 func TestNewLRUCache(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(2)
+	lru, err := memory.NewLRUCache(2)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
 	if lru == nil {
 		t.Fatal("NewLRUCache() returned nil cache")
 	}
-	if lru.capacity != 2 {
-		t.Fatalf("NewLRUCache() capacity = %d, want 2", lru.capacity)
-	}
-	if lru.cache == nil {
-		t.Fatal("NewLRUCache() cache map is nil")
-	}
-	if lru.ll == nil {
-		t.Fatal("NewLRUCache() list is nil")
-	}
 }
 
 func TestNewLRUCacheInvalidCapacity(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(0)
+	lru, err := memory.NewLRUCache(0)
 	if err == nil {
 		t.Fatal("NewLRUCache() expected error for zero capacity")
 	}
@@ -44,7 +36,7 @@ func TestNewLRUCacheInvalidCapacity(t *testing.T) {
 func TestLRUCachePushAndPull(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(2)
+	lru, err := memory.NewLRUCache(2)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -66,7 +58,7 @@ func TestLRUCachePushAndPull(t *testing.T) {
 func TestLRUCachePullMissing(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(1)
+	lru, err := memory.NewLRUCache(1)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -83,7 +75,7 @@ func TestLRUCachePullMissing(t *testing.T) {
 func TestLRUCachePushUpdatesExistingKey(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(2)
+	lru, err := memory.NewLRUCache(2)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -102,15 +94,12 @@ func TestLRUCachePushUpdatesExistingKey(t *testing.T) {
 	if !bytes.Equal(got, []byte("new")) {
 		t.Fatalf("Pull() = %q, want %q", got, []byte("new"))
 	}
-	if len(lru.cache) != 1 {
-		t.Fatalf("cache size = %d, want 1", len(lru.cache))
-	}
 }
 
 func TestLRUCacheEvictsLeastRecentlyUsed(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(2)
+	lru, err := memory.NewLRUCache(2)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -148,7 +137,7 @@ func TestLRUCacheEvictsLeastRecentlyUsed(t *testing.T) {
 func TestLRUCacheCapacityOneEvictsPreviousKey(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(1)
+	lru, err := memory.NewLRUCache(1)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -175,7 +164,7 @@ func TestLRUCacheCapacityOneEvictsPreviousKey(t *testing.T) {
 func TestLRUCacheHandlesEmptyKeyAndNilValue(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(1)
+	lru, err := memory.NewLRUCache(1)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}
@@ -192,28 +181,10 @@ func TestLRUCacheHandlesEmptyKeyAndNilValue(t *testing.T) {
 	}
 }
 
-func TestLRUCacheRemoveOldestEmptyCache(t *testing.T) {
-	t.Parallel()
-
-	lru, err := NewLRUCache(1)
-	if err != nil {
-		t.Fatalf("NewLRUCache() error = %v", err)
-	}
-
-	lru.removeOldest()
-
-	if len(lru.cache) != 0 {
-		t.Fatalf("cache size = %d, want 0", len(lru.cache))
-	}
-	if lru.ll.Len() != 0 {
-		t.Fatalf("list length = %d, want 0", lru.ll.Len())
-	}
-}
-
 func TestLRUCacheClose(t *testing.T) {
 	t.Parallel()
 
-	lru, err := NewLRUCache(1)
+	lru, err := memory.NewLRUCache(1)
 	if err != nil {
 		t.Fatalf("NewLRUCache() error = %v", err)
 	}

@@ -9,11 +9,17 @@ import (
 	"sync"
 )
 
-// Создаёт палитру цветов на основе переданных изображений.
-// Сумма цветов всех изображений не должна превышать 256 с `addTransparent` в значении false
-// или `255` если установлено `true`.
+const (
+	maxPaletteColors      = 256
+	baseImageColorCount   = 240
+	handImageColorCount   = 15
+	horizontalImageOffset = 0.1
+	verticalImageOffset   = 0.08
+	animationFrameCount   = 10
+)
+
 func createPalette(addTransparent bool, quantizer Quantizer, images ...colorCountedImage) (color.Palette, error) {
-	palette := make([]color.Color, 0, 256)
+	palette := make([]color.Color, 0, maxPaletteColors)
 	if addTransparent {
 		palette = append(palette, color.RGBA{})
 	}
@@ -26,7 +32,7 @@ func createPalette(addTransparent bool, quantizer Quantizer, images ...colorCoun
 		palette = append(palette, imgPalette...)
 	}
 
-	if len(palette) > 256 {
+	if len(palette) > maxPaletteColors {
 		return nil, errors.New("the palette has more than 256 colors")
 	}
 
@@ -50,13 +56,11 @@ func MakeGif(baseImg image.Image, w io.Writer, config Config, quantizer Quantize
 		delay    = config.Delay
 		disposal = config.Disposal
 	)
-	const frames = 10
-
 	if size := baseImg.Bounds().Size(); size.X != width || size.Y != width {
 		baseImg = resizeImage(baseImg, width, height)
 	}
 
-	var images = make([]*image.Paletted, frames)
+	var images = make([]*image.Paletted, animationFrameCount)
 
 	basePalette, err := createPalette(
 		true,
@@ -64,31 +68,31 @@ func MakeGif(baseImg image.Image, w io.Writer, config Config, quantizer Quantize
 		[]colorCountedImage{
 			{
 				Image:      baseImg,
-				ColorCount: 240,
+				ColorCount: baseImageColorCount,
 			},
 			{
 				Image:      hands[0],
-				ColorCount: 15,
+				ColorCount: handImageColorCount,
 			}}...)
 	if err != nil {
 		return err
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(frames)
+	wg.Add(animationFrameCount)
 
-	for i := range frames {
+	for i := range animationFrameCount {
 		go func(i int) {
 			squeeze := float64(i)
-			if i >= frames/2 {
-				squeeze = float64(frames - i)
+			if i >= animationFrameCount/2 {
+				squeeze = float64(animationFrameCount - i)
 			}
 
 			var (
 				scaleX  = 0.8 + squeeze*0.02
 				scaleY  = 0.8 - squeeze*0.05
-				offsetX = int(((1-scaleX)*0.5 + 0.1) * float64(width))
-				offsetY = int(((1 - scaleY) - 0.08) * float64(height))
+				offsetX = int(((1-scaleX)*0.5 + horizontalImageOffset) * float64(width))
+				offsetY = int(((1 - scaleY) - verticalImageOffset) * float64(height))
 			)
 
 			canvas := createTransparentImage(width, height, basePalette)
@@ -106,11 +110,11 @@ func MakeGif(baseImg image.Image, w io.Writer, config Config, quantizer Quantize
 	}
 
 	var (
-		delays    = make([]int, frames)
-		disposals = make([]byte, frames)
+		delays    = make([]int, animationFrameCount)
+		disposals = make([]byte, animationFrameCount)
 	)
 
-	for i := range frames {
+	for i := range animationFrameCount {
 		delays[i] = delay
 		disposals[i] = disposal
 	}

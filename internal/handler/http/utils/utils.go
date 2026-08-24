@@ -1,15 +1,18 @@
 package utils
 
 import (
+	"net/http"
 	"strconv"
 	"strings"
 )
+
+const defaultDelay = 3
 
 func ParseDelay(value string) (int, error) {
 	value = strings.TrimSpace(value)
 	switch value {
 	case "":
-		return 3, nil
+		return defaultDelay, nil
 	default:
 		return strconv.Atoi(value)
 	}
@@ -26,4 +29,10 @@ func ParseDiscordError(err error) string {
 	}
 
 	return "Something went wrong"
+}
+
+func SetNoCacheHeaders(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
 }

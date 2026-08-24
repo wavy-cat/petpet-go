@@ -17,18 +17,18 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 )
 
-// S3Cache implements the BytesCache interface using Amazon S3 or compatible storage
-type S3Cache struct {
+// Cache implements the BytesCache interface using Amazon S3 or compatible storage.
+type Cache struct {
 	client     *s3.Client
 	bucketName string
 	closingWg  sync.WaitGroup
 	closed     bool
 }
 
-// NewS3Cache creates a new S3 cache with the specified bucket, endpoint, region, and optional access keys
-func NewS3Cache(bucketName, endpoint, region, accessKey, secretKey string) (*S3Cache, error) {
+// NewS3Cache creates a new S3 cache with the specified bucket, endpoint, region, and optional access keys.
+func NewS3Cache(bucketName, endpoint, region, accessKey, secretKey string) (*Cache, error) {
 	if bucketName == "" {
-		return nil, fmt.Errorf("bucket name is required")
+		return nil, errors.New("bucket name is required")
 	}
 
 	cfg, err := config.LoadDefaultConfig(context.TODO())
@@ -48,16 +48,16 @@ func NewS3Cache(bucketName, endpoint, region, accessKey, secretKey string) (*S3C
 		}
 	})
 
-	return &S3Cache{
+	return &Cache{
 		client:     client,
 		bucketName: bucketName,
 	}, nil
 }
 
-// Push stores the data in the S3 bucket
-func (sc *S3Cache) Push(key string, value []byte) error {
+// Push stores the data in the S3 bucket.
+func (sc *Cache) Push(key string, value []byte) error {
 	if sc.closed {
-		return fmt.Errorf("cache is closed")
+		return errors.New("cache is closed")
 	}
 	sc.closingWg.Add(1)
 	defer sc.closingWg.Done()
@@ -70,10 +70,10 @@ func (sc *S3Cache) Push(key string, value []byte) error {
 	return err
 }
 
-// Pull retrieves the data from the S3 bucket
-func (sc *S3Cache) Pull(key string) ([]byte, error) {
+// Pull retrieves the data from the S3 bucket.
+func (sc *Cache) Pull(key string) ([]byte, error) {
 	if sc.closed {
-		return nil, fmt.Errorf("cache is closed")
+		return nil, errors.New("cache is closed")
 	}
 	sc.closingWg.Add(1)
 	defer sc.closingWg.Done()
@@ -96,9 +96,9 @@ func (sc *S3Cache) Pull(key string) ([]byte, error) {
 	return io.ReadAll(result.Body)
 }
 
-func (sc *S3Cache) Close() error {
+func (sc *Cache) Close() error {
 	if sc.closed {
-		return fmt.Errorf("cache is already closed")
+		return errors.New("cache is already closed")
 	}
 	sc.closed = true
 	sc.closingWg.Wait()

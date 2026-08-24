@@ -4,10 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wavy-cat/petpet-go/internal/middleware"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
+	"github.com/wavy-cat/petpet-go/internal/middleware"
 	"github.com/wavy-cat/petpet-go/internal/service"
 	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
@@ -15,60 +14,51 @@ import (
 
 func NewHandler(gifService service.GIFService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger := r.Context().Value(middleware.LoggerKey).(*zap.Logger)
-
-		// Getting the user ID
-		userId := chi.URLParam(r, "user_id")
-		if userId == "" {
-			logger.Warn("Failed to get user ID", zap.String("user_id", userId))
-			if err := responses.RespondSoftError(w, "No user ID was specified"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+		logger, ok := middleware.LoggerFromContext(r.Context())
+		if !ok {
+			http.Error(w, "missing request logger", http.StatusInternalServerError)
 			return
 		}
 
-		if strings.ToLower(userId) == "user_id" {
-			if err := responses.RespondSoftError(w, "Replace `user_id` in the URL with real Discord user ID 😉"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
+		userID, message := verifyDiscordUserID(r)
+		if message != "" {
+			if userID == "" {
+				logger.Warn("Failed to get user ID", zap.String("user_id", userID))
 			}
+			responses.RespondSoftError(w, message)
 			return
 		}
 
-		// Getting delay
 		delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 		if err != nil {
-			if err := responses.RespondSoftError(w, "Incorrect delay"); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+			responses.RespondSoftError(w, "Incorrect delay")
 			return
 		}
 
-		// Setting caching policies
-		switch r.URL.Query().Get("no-cache") {
-		case "true":
-			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
-			w.Header().Set("Pragma", "no-cache") // For compatibility with older browsers
-			w.Header().Set("Expires", "0")       // For compatibility with older browsers
-		default:
-			w.Header().Set("Cache-Control", "max-age=900")
+		if r.URL.Query().Get("no-cache") == "true" {
+			utils.SetNoCacheHeaders(w)
 		}
-
-		// Calling the service to generate GIF
-		gif, err := gifService.GetOrGenerateGif(r.Context(), userId, delay)
+		gif, err := gifService.GetOrGenerateGif(r.Context(), userID, delay)
 		if err != nil {
-			logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userId))
-
-			errDetails := utils.ParseDiscordError(err)
-			if err := responses.RespondSoftError(w, errDetails); err != nil {
-				logger.Error("Error sending response", zap.Error(err))
-			}
+			logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userID))
+			responses.RespondSoftError(w, utils.ParseDiscordError(err))
 			return
 		}
 
-		// Returning the result
-		_, err = responses.RespondContent(w, "image/gif", gif)
-		if err != nil {
+		if _, err := responses.RespondContent(w, "image/gif", gif); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
+	}
+}
+
+func verifyDiscordUserID(r *http.Request) (string, string) {
+	userID := chi.URLParam(r, "user_id")
+	switch {
+	case userID == "":
+		return userID, "No user ID was specified"
+	case strings.EqualFold(userID, "user_id"):
+		return userID, "Replace `user_id` in the URL with real Discord user ID 😉"
+	default:
+		return userID, ""
 	}
 }

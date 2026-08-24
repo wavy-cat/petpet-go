@@ -1,10 +1,11 @@
-package cachefactory
+package cachefactory_test
 
 import (
 	"errors"
 	"strings"
 	"testing"
 
+	"github.com/wavy-cat/petpet-go/internal/cachefactory"
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 )
@@ -12,7 +13,7 @@ import (
 func TestNewDisabledCache(t *testing.T) {
 	t.Parallel()
 
-	instance, err := New(config.Cache{})
+	instance, err := cachefactory.New(config.Cache{})
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -27,7 +28,7 @@ func TestNewDisabledCache(t *testing.T) {
 func TestNewMemoryCache(t *testing.T) {
 	t.Parallel()
 
-	instance, err := New(config.Cache{
+	instance, err := cachefactory.New(config.Cache{
 		Storage: "memory",
 		Memory: config.CacheMemoryConfig{
 			Capacity: 1,
@@ -48,7 +49,7 @@ func TestNewMemoryCache(t *testing.T) {
 func TestNewUnknownStorage(t *testing.T) {
 	t.Parallel()
 
-	instance, err := New(config.Cache{Storage: "redis"})
+	instance, err := cachefactory.New(config.Cache{Storage: "redis"})
 	if err == nil {
 		t.Fatal("New() error = nil, want unsupported storage error")
 	}

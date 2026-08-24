@@ -2,7 +2,6 @@ package cachefactory
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
@@ -22,7 +21,7 @@ func New(cfg config.Cache) (cache.BytesCache, error) {
 		}
 		return instance, nil
 	case "fs":
-		instance, err := fs.NewFileSystemCache(cfg.FS.Path, time.Duration(cfg.FS.TTL)*time.Second)
+		instance, err := fs.NewFileSystemCache(cfg.FS.Path, cfg.FS.TTL)
 		if err != nil {
 			return nil, fmt.Errorf("create filesystem cache: %w", err)
 		}

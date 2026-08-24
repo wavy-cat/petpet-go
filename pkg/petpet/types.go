@@ -5,6 +5,12 @@ import (
 	"image/color"
 )
 
+const (
+	defaultImageSize = 128
+	defaultDelay     = 4
+	defaultDisposal  = 0x02
+)
+
 type Config struct {
 	Width    int  // Recommend 128
 	Height   int  // Recommend 128
@@ -13,10 +19,10 @@ type Config struct {
 }
 
 var DefaultConfig = Config{
-	Width:    128,
-	Height:   128,
-	Delay:    4,
-	Disposal: 0x02,
+	Width:    defaultImageSize,
+	Height:   defaultImageSize,
+	Delay:    defaultDelay,
+	Disposal: defaultDisposal,
 }
 
 type colorCountedImage struct {

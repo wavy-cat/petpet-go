@@ -37,8 +37,12 @@ func (l *LRUCache) Push(key string, value []byte) error {
 
 	// If the key already exists, update its value and move it to the front.
 	if el, ok := l.cache[key]; ok {
+		entry, ok := el.Value.(*entry)
+		if !ok {
+			return errors.New("invalid cache entry")
+		}
 		l.ll.MoveToFront(el)
-		el.Value.(*entry).value = value
+		entry.value = value
 		return nil
 	}
 
@@ -58,8 +62,12 @@ func (l *LRUCache) Pull(key string) ([]byte, error) {
 	defer l.mu.Unlock()
 
 	if el, ok := l.cache[key]; ok {
+		entry, ok := el.Value.(*entry)
+		if !ok {
+			return nil, errors.New("invalid cache entry")
+		}
 		l.ll.MoveToFront(el)
-		return el.Value.(*entry).value, nil
+		return entry.value, nil
 	}
 	return nil, cache.ErrNotExists
 }
@@ -67,8 +75,11 @@ func (l *LRUCache) Pull(key string) ([]byte, error) {
 func (l *LRUCache) removeOldest() {
 	oldest := l.ll.Back()
 	if oldest != nil {
+		kv, ok := oldest.Value.(*entry)
+		if !ok {
+			return
+		}
 		l.ll.Remove(oldest)
-		kv := oldest.Value.(*entry)
 		delete(l.cache, kv.key)
 	}
 }

@@ -1,4 +1,4 @@
-package tests
+package tests_test
 
 import (
 	"bytes"
@@ -13,6 +13,8 @@ import (
 )
 
 func TestGIF(t *testing.T) {
+	t.Parallel()
+
 	images := []struct {
 		img image.Image
 		len int

@@ -1,15 +1,21 @@
 package quantizers
 
 import (
-	"github.com/nfnt/resize"
 	"image"
 	"image/color"
+
+	"github.com/nfnt/resize"
+)
+
+const (
+	sampleWidth  = 64
+	sampleHeight = 4
 )
 
 type NearestNeighborQuantizer struct{}
 
 func (NearestNeighborQuantizer) QuantizeImage(img image.Image, numColors int) ([]color.Color, error) {
-	smallImg := resize.Resize(64, 4, img, resize.NearestNeighbor)
+	smallImg := resize.Resize(sampleWidth, sampleHeight, img, resize.NearestNeighbor)
 	bounds := smallImg.Bounds()
 	var palette []color.Color
 

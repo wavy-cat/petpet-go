@@ -2,7 +2,6 @@ package petpet
 
 import (
 	"embed"
-	"fmt"
 	"image"
 	"image/gif"
 	"io/fs"
@@ -11,30 +10,32 @@ import (
 //go:embed img/pet*.gif
 var resources embed.FS
 
-var hands [10]image.Image // Массив с GIF изображениями рук
+var hands = loadHands()
 
-func init() {
+func loadHands() [animationFrameCount]image.Image {
 	files, err := fs.Glob(resources, "img/*.gif")
 	if err != nil {
 		panic(err)
 	}
 
+	var loadedHands [animationFrameCount]image.Image
 	for i, file := range files {
 		reader, err := resources.Open(file)
 		if err != nil {
 			panic(err)
 		}
 
-		img, err := gif.Decode(reader)
-		if err != nil {
-			panic(err)
+		img, decodeErr := gif.Decode(reader)
+		closeErr := reader.Close()
+		if decodeErr != nil {
+			panic(decodeErr)
+		}
+		if closeErr != nil {
+			panic(closeErr)
 		}
 
-		err = reader.Close()
-		if err != nil {
-			fmt.Println("Failed to close file reader")
-		}
-
-		hands[i] = img
+		loadedHands[i] = img
 	}
+
+	return loadedHands
 }

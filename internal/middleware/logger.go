@@ -24,29 +24,35 @@ const RequestIDKey ctxKeyRequestID = 0
 // RequestIDHeader is the name of the HTTP Header which contains the request id
 const RequestIDHeader = "X-Request-ID"
 
+// LoggerFromContext returns the request logger stored by Logger.
+func LoggerFromContext(ctx context.Context) (*zap.Logger, bool) {
+	logger, ok := ctx.Value(LoggerKey).(*zap.Logger)
+	return logger, ok
+}
+
 func Logger(logger *zap.Logger, service string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			requestId := r.Header.Get(RequestIDHeader)
-			if requestId == "" {
+			requestID := r.Header.Get(RequestIDHeader)
+			if requestID == "" {
 				var err error
-				requestId, err = gonanoid.New()
+				requestID, err = gonanoid.New()
 				if err != nil {
 					logger.Fatal("Failed to generate request ID", zap.Error(err))
 				}
 			}
 
 			logger := logger.
-				With(zap.String("requestId", requestId)).
+				With(zap.String("requestId", requestID)).
 				With(zap.String("service", service))
 
-			ctx = context.WithValue(ctx, RequestIDKey, requestId)
+			ctx = context.WithValue(ctx, RequestIDKey, requestID)
 			ctx = context.WithValue(ctx, LoggerKey, logger)
 
 			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			ww.Header().Add(RequestIDHeader, requestId)
+			ww.Header().Add(RequestIDHeader, requestID)
 
 			t1 := time.Now()
 			defer func() {

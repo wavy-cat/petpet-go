@@ -48,6 +48,8 @@ func encodeLevel() zapcore.LevelEncoder {
 			enc.AppendString("ALERT")
 		case zapcore.FatalLevel:
 			enc.AppendString("EMERGENCY")
+		case zapcore.InvalidLevel:
+			enc.AppendString("DEFAULT")
 		default:
 			enc.AppendString("DEFAULT")
 		}

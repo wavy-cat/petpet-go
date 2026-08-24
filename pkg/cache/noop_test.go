@@ -1,28 +1,30 @@
-package cache
+package cache_test
 
 import (
 	"errors"
 	"testing"
+
+	"github.com/wavy-cat/petpet-go/pkg/cache"
 )
 
 func TestNoop(t *testing.T) {
 	t.Parallel()
 
-	cache := NewNoop()
+	noop := cache.NewNoop()
 
-	if err := cache.Push("key", []byte("value")); err != nil {
+	if err := noop.Push("key", []byte("value")); err != nil {
 		t.Fatalf("Push() error = %v", err)
 	}
 
-	value, err := cache.Pull("key")
-	if !errors.Is(err, ErrNotExists) {
-		t.Fatalf("Pull() error = %v, want %v", err, ErrNotExists)
+	value, err := noop.Pull("key")
+	if !errors.Is(err, cache.ErrNotExists) {
+		t.Fatalf("Pull() error = %v, want %v", err, cache.ErrNotExists)
 	}
 	if value != nil {
 		t.Fatalf("Pull() value = %q, want nil", value)
 	}
 
-	if err := cache.Close(); err != nil {
+	if err := noop.Close(); err != nil {
 		t.Fatalf("Close() error = %v", err)
 	}
 }
