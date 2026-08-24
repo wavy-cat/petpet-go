@@ -332,12 +332,7 @@ linters:
       # Default: []
       disable:
         - fieldalignment # too strict
-      # Settings per analyzer.
-      settings:
-        shadow:
-          # Whether to be strict about shadowing; can be noisy.
-          # Default: false
-          strict: true
+        - shadow
 
     inamedparam:
       # Skips check for interface methods with only a single parameter.
