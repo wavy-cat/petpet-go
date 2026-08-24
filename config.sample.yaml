@@ -5,9 +5,9 @@ server:
   # The port where the server will run.
   # `PORT` in env. Range 0-65535 (uint16). Default is 3000
   port: 3000
-  # Timeout in milliseconds for graceful shutdown
-  # `SHUTDOWN_TIMEOUT` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 5000
-  shutdownTimeout: 5000
+  # Timeout for graceful shutdown
+  # `SHUTDOWN_TIMEOUT` in env. Range uint (https://pkg.go.dev/builtin#uint). Default is 5s
+  shutdownTimeout: "5s"
   # Timeout for writing responses.
   # `WRITE_TIMEOUT` in env. Default is 15s
   writeTimeout: 15s
@@ -36,9 +36,9 @@ server:
     # Queue size for requests.
     # `THROTTLE_BACKLOG` in env. Default is 3
     backlog: 3
-    # Number of seconds requests can stay in the queue.
-    # `THROTTLE_BACKLOG_TIMEOUT` in env. Default is 5
-    backlogTimeout: 5
+    # The amount of time requests remain in the queue.
+    # `THROTTLE_BACKLOG_TIMEOUT` in env. Default is 5s
+    backlogTimeout: "5s"
   # TLS settings
   tls:
     # Enables HTTPS listener.
@@ -50,9 +50,6 @@ server:
     # Path to TLS private key file (PEM). Required when TLS is enabled.
     # `TLS_KEY_FILE` in env.
     keyFile: "./certs/server.key"
-  # Enables HTTP/2 support. For browsers/clients this is relevant mostly with TLS.
-  # `ENABLE_HTTP2` in env. Default is true
-  enableHttp2: true
 discord:
   # Enables Discord avatar endpoints: /ds/{user_id} and /ds/{user_id}.gif
   # `DISCORD_ENABLE` in env. Default is true

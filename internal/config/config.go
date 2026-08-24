@@ -8,10 +8,10 @@ type ServerHeartbeat struct {
 }
 
 type ServerThrottle struct {
-	Enable         bool `yaml:"enable"         env:"THROTTLE_ENABLE"          env-default:"false"`
-	Limit          int  `yaml:"limit"          env:"THROTTLE_LIMIT"           env-default:"2"`
-	Backlog        int  `yaml:"backlog"        env:"THROTTLE_BACKLOG"         env-default:"3"`
-	BacklogTimeout uint `yaml:"backlogTimeout" env:"THROTTLE_BACKLOG_TIMEOUT" env-default:"5"` // in secs
+	Enable         bool          `yaml:"enable"         env:"THROTTLE_ENABLE"          env-default:"false"`
+	Limit          int           `yaml:"limit"          env:"THROTTLE_LIMIT"           env-default:"2"`
+	Backlog        int           `yaml:"backlog"        env:"THROTTLE_BACKLOG"         env-default:"3"`
+	BacklogTimeout time.Duration `yaml:"backlogTimeout" env:"THROTTLE_BACKLOG_TIMEOUT" env-default:"5s"` // in secs
 }
 
 type ServerTLS struct {
@@ -23,14 +23,13 @@ type ServerTLS struct {
 type Server struct {
 	Host            string          `yaml:"host"            env:"HOST"`
 	Port            uint16          `yaml:"port"            env:"PORT"             env-default:"3000"`
-	ShutdownTimeout uint            `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5000"`
+	ShutdownTimeout time.Duration   `yaml:"shutdownTimeout" env:"SHUTDOWN_TIMEOUT" env-default:"5s"`
 	WriteTimeout    time.Duration   `yaml:"writeTimeout"    env:"WRITE_TIMEOUT"    env-default:"15s"`
 	ReadTimeout     time.Duration   `yaml:"readTimeout"     env:"READ_TIMEOUT"     env-default:"15s"`
 	IdleTimeout     time.Duration   `yaml:"idleTimeout"     env:"IDLE_TIMEOUT"     env-default:"60s"`
 	Heartbeat       ServerHeartbeat `yaml:"heartbeat"`
 	Throttle        ServerThrottle  `yaml:"throttle"`
 	TLS             ServerTLS       `yaml:"tls"`
-	EnableHTTP2     bool            `yaml:"enableHttp2"     env:"ENABLE_HTTP2"     env-default:"true"`
 }
 
 type Discord struct {
