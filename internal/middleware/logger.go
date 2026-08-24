@@ -22,10 +22,10 @@ type ctxKeyRequestID int
 // RequestIDKey is the key that holds the unique request ID in a request context.
 const RequestIDKey ctxKeyRequestID = 0
 
-// RequestIDHeader is the name of the HTTP Header which contains the request id
+// RequestIDHeader is the name of the HTTP Header which contains the request id.
 const RequestIDHeader = "X-Request-ID"
 
-// RequestCfRayHeader is the name of the HTTP Header which contains the request id specify to Cloudflare reverse proxy
+// RequestCfRayHeader is the name of the HTTP Header which contains the request id specify to Cloudflare reverse proxy.
 const RequestCfRayHeader = "Cf-Ray"
 
 // LoggerFromContext returns the request logger stored by Logger.
@@ -34,7 +34,7 @@ func LoggerFromContext(ctx context.Context) (*zap.Logger, bool) {
 	return logger, ok
 }
 
-func Logger(logger *zap.Logger, service string) func(next http.Handler) http.Handler {
+func Logger(logger *zap.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
