@@ -25,13 +25,13 @@ func NewHandler(gifService service.GIFService) http.HandlerFunc {
 			if userID == "" {
 				logger.Warn("Failed to get user ID", zap.String("user_id", userID))
 			}
-			responses.RespondSoftError(w, message)
+			utils.RespondSoftError(w, message, logger)
 			return
 		}
 
 		delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 		if err != nil {
-			responses.RespondSoftError(w, "Incorrect delay")
+			utils.RespondSoftError(w, "Incorrect delay", logger)
 			return
 		}
 
@@ -41,7 +41,7 @@ func NewHandler(gifService service.GIFService) http.HandlerFunc {
 		gif, err := gifService.GetOrGenerateGif(r.Context(), userID, delay)
 		if err != nil {
 			logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userID))
-			responses.RespondSoftError(w, utils.ParseDiscordError(err))
+			utils.RespondSoftError(w, utils.ParseDiscordError(err), logger)
 			return
 		}
 

@@ -33,21 +33,21 @@ func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) ht
 
 		delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 		if err != nil {
-			responses.RespondSoftError(w, "Incorrect delay")
+			utils.RespondSoftError(w, "Incorrect delay", logger)
 			return
 		}
 
 		utils.SetNoCacheHeaders(w)
 		img, message := decodeUploadedImage(w, r, uploadCfg, logger)
 		if message != "" {
-			responses.RespondSoftError(w, message)
+			utils.RespondSoftError(w, message, logger)
 			return
 		}
 
 		gif, err := gifService.GenerateGifFromImage(r.Context(), img, delay)
 		if err != nil {
 			logger.Error("Error during GIF generation", zap.Error(err))
-			responses.RespondSoftError(w, "Failed to generate GIF")
+			utils.RespondSoftError(w, "Failed to generate GIF", logger)
 			return
 		}
 

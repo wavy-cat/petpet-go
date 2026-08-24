@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/wavy-cat/petpet-go/pkg/responses"
+	"go.uber.org/zap"
 )
 
 const defaultDelay = 3
@@ -35,4 +38,10 @@ func SetNoCacheHeaders(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, private")
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
+}
+
+func RespondSoftError(w http.ResponseWriter, details string, logger *zap.Logger) {
+	if err := responses.RespondSoftError(w, details); err != nil {
+		logger.Error("Error sending response", zap.Error(err))
+	}
 }
