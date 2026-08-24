@@ -56,10 +56,7 @@ func main() {
 	}
 
 	defer func(logger *zap.Logger) {
-		err := logger.Sync()
-		if err != nil {
-			fmt.Println("Error syncing logger-presets:", err)
-		}
+		_ = logger.Sync()
 	}(logger)
 
 	// Create a cache instance
