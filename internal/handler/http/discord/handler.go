@@ -14,11 +14,7 @@ import (
 
 func NewHandler(gifService service.GIFService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger, ok := middleware.LoggerFromContext(r.Context())
-		if !ok {
-			http.Error(w, "missing request logger", http.StatusInternalServerError)
-			return
-		}
+		logger := middleware.LoggerFromContext(r.Context())
 
 		userID, message := verifyDiscordUserID(r)
 		if message != "" {

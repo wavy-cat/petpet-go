@@ -29,9 +29,9 @@ const RequestIDHeader = "X-Request-ID"
 const RequestCfRayHeader = "Cf-Ray"
 
 // LoggerFromContext returns the request logger stored by Logger.
-func LoggerFromContext(ctx context.Context) (*zap.Logger, bool) {
-	logger, ok := ctx.Value(LoggerKey).(*zap.Logger)
-	return logger, ok
+func LoggerFromContext(ctx context.Context) *zap.Logger {
+	logger := ctx.Value(LoggerKey).(*zap.Logger)
+	return logger
 }
 
 func Logger(logger *zap.Logger) func(next http.Handler) http.Handler {

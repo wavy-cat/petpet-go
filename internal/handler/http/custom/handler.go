@@ -25,11 +25,7 @@ var errNoUploadFile = errors.New("no upload file")
 
 func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger, ok := middleware.LoggerFromContext(r.Context())
-		if !ok {
-			http.Error(w, "missing request logger", http.StatusInternalServerError)
-			return
-		}
+		logger := middleware.LoggerFromContext(r.Context())
 
 		delay, err := utils.ParseDelay(r.URL.Query().Get("delay"))
 		if err != nil {

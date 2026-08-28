@@ -42,7 +42,7 @@ func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Prov
 }
 
 func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay int) ([]byte, error) {
-	logger := loggerFromContext(ctx)
+	logger := middleware.LoggerFromContext(ctx)
 
 	userAvatar, err := s.provider.GetUserAvatar(ctx, userID)
 	if err != nil {
@@ -91,15 +91,6 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay i
 	return data, nil
 }
 
-func loggerFromContext(ctx context.Context) *zap.Logger {
-	logger, ok := middleware.LoggerFromContext(ctx)
-	if !ok {
-		panic("missing logger-presets in gif service")
-	}
-
-	return logger
-}
-
 func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, delay int) ([]byte, error) {
 	config := s.config
 	config.Delay = delay
@@ -115,7 +106,7 @@ func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, del
 }
 
 func (s gifService) getAvatarImage(ctx context.Context, userAvatar avatarproviders.UserAvatar) ([]byte, error) {
-	logger := loggerFromContext(ctx)
+	logger := middleware.LoggerFromContext(ctx)
 	avatarID, err := userAvatar.GetID(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving avatar id: %w", err)
