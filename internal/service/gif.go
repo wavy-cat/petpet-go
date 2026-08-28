@@ -29,9 +29,6 @@ type gifService struct {
 
 func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider,
 	config petpet.Config, quantizer petpet.Quantizer) GIFService {
-	if cacheInstance == nil {
-		cacheInstance = cache.NewNoop()
-	}
 
 	return &gifService{
 		config:    config,
