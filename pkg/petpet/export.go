@@ -17,9 +17,9 @@ const (
 )
 
 // ExportGIF writes animation frames in GIF format.
-func ExportGIF(w io.Writer, images []image.Image, config Config) error {
-	if len(images) == 0 {
-		return errors.New("must provide at least one image")
+func ExportGIF(w io.Writer, images []image.Image, delay int, disposal byte) error {
+	if err := validateImages(images); err != nil {
+		return err
 	}
 
 	palette, err := createPalette(true, colorCountedImage{
@@ -30,6 +30,39 @@ func ExportGIF(w io.Writer, images []image.Image, config Config) error {
 		return err
 	}
 
+	return gif.EncodeAll(w, &gif.GIF{
+		Image:    palettizeImages(images, palette),
+		Delay:    repeatedInts(len(images), delay),
+		Disposal: repeatedBytes(len(images), disposal),
+	})
+}
+
+// ExportWebp writes animation frames in WebP format.
+func ExportWebp(w io.Writer, images []image.Image, delay int, disposal byte) error {
+	if err := validateImages(images); err != nil {
+		return err
+	}
+
+	return nativewebp.EncodeAll(w, &nativewebp.Animation{
+		Images:          images,
+		Durations:       webpDurations(len(images), delay),
+		Disposals:       webpDisposals(len(images), disposal),
+		LoopCount:       0,
+		BackgroundColor: 0,
+	}, nil)
+}
+
+var errNoImages = errors.New("must provide at least one image")
+
+func validateImages(images []image.Image) error {
+	if len(images) == 0 {
+		return errNoImages
+	}
+
+	return nil
+}
+
+func palettizeImages(images []image.Image, palette color.Palette) []*image.Paletted {
 	palettedImages := make([]*image.Paletted, len(images))
 	for i, src := range images {
 		dest := image.NewPaletted(src.Bounds(), palette)
@@ -37,44 +70,48 @@ func ExportGIF(w io.Writer, images []image.Image, config Config) error {
 		palettedImages[i] = dest
 	}
 
-	delays := make([]int, len(images))
-	disposals := make([]byte, len(images))
-	for i := range images {
-		delays[i] = config.Delay
-		disposals[i] = config.Disposal
-	}
-
-	return gif.EncodeAll(w, &gif.GIF{
-		Image:    palettedImages,
-		Delay:    delays,
-		Disposal: disposals,
-	})
+	return palettedImages
 }
 
-// ExportWebp writes animation frames in WebP format.
-func ExportWebp(w io.Writer, images []image.Image, config Config) error {
-	if len(images) == 0 {
-		return errors.New("must provide at least one image")
+func repeatedInts(length, value int) []int {
+	values := make([]int, length)
+	for i := range values {
+		values[i] = value
 	}
 
-	durations := make([]uint, len(images))
-	disposals := make([]uint, len(images))
-	for i := range images {
-		durations[i] = uint(config.Delay * webpMillisecondsPerGIFTick)
-		if config.Disposal > 0 {
-			disposals[i] = 1
-		}
-	}
-
-	return nativewebp.EncodeAll(w, &nativewebp.Animation{
-		Images:          images,
-		Durations:       durations,
-		Disposals:       disposals,
-		LoopCount:       0,
-		BackgroundColor: 0,
-	}, nil)
+	return values
 }
 
+func repeatedBytes(length int, value byte) []byte {
+	values := make([]byte, length)
+	for i := range values {
+		values[i] = value
+	}
+
+	return values
+}
+
+func webpDurations(frameCount, delay int) []uint {
+	durations := make([]uint, frameCount)
+	for i := range durations {
+		durations[i] = uint(delay * webpMillisecondsPerGIFTick)
+	}
+
+	return durations
+}
+
+func webpDisposals(frameCount int, disposal byte) []uint {
+	disposals := make([]uint, frameCount)
+	if disposal == 0 {
+		return disposals
+	}
+
+	for i := range disposals {
+		disposals[i] = 1
+	}
+
+	return disposals
+}
 func createPalette(addTransparent bool, images ...colorCountedImage) (color.Palette, error) {
 	palette := make([]color.Color, 0, maxPaletteColors)
 	if addTransparent {

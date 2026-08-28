@@ -21,14 +21,12 @@ type GIFService interface {
 }
 
 type gifService struct {
-	config   petpet.Config
 	cache    cache.BytesCache
 	provider avatarproviders.Provider
 }
 
-func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider, config petpet.Config) GIFService {
+func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider) GIFService {
 	return &gifService{
-		config:   config,
 		cache:    cacheInstance,
 		provider: provider,
 	}
@@ -85,14 +83,11 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay i
 }
 
 func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, delay int) ([]byte, error) {
-	config := s.config
-	config.Delay = delay
-
 	var buf bytes.Buffer
 	defer buf.Reset()
 
-	frames := petpet.MakeAnimation(img, config)
-	if err := petpet.ExportGIF(&buf, frames, config); err != nil {
+	frames := petpet.MakeAnimation(img, petpet.DefaultImageSize, petpet.DefaultImageSize)
+	if err := petpet.ExportGIF(&buf, frames, delay, petpet.DefaultDisposal); err != nil {
 		return nil, err
 	}
 

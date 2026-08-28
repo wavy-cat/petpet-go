@@ -9,59 +9,60 @@ import (
 	"testing"
 
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
-	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 )
 
-func TestGIF(t *testing.T) {
+func TestAnimation(t *testing.T) {
 	t.Parallel()
 
 	images := []struct {
-		img image.Image
-		len int
+		img     image.Image
+		webpLen int
+		gifLen  int
 	}{
 		{
-			img: getImage("wavycat.png"),
-			len: 73599,
+			img:     getImage("wavycat.png"),
+			webpLen: 172586,
+			gifLen:  78768,
 		},
 		{
-			img: getImage("tasica.png"),
-			len: 55654,
+			img:     getImage("tasica.png"),
+			webpLen: 197754,
+			gifLen:  66969,
 		},
 	}
 
-	t.Run("Generate Gif", func(t *testing.T) {
+	t.Run("Generate WebP animation", func(t *testing.T) {
 		t.Parallel()
 
 		for _, img := range images {
 			output := bytes.Buffer{}
 
-			err := petpet.MakeGif(img.img, &output, petpet.DefaultConfig, quantizers.HierarhicalQuantizer{})
+			imgs := petpet.MakeAnimation(img.img, petpet.DefaultImageSize, petpet.DefaultImageSize)
+			err := petpet.ExportWebp(&output, imgs, petpet.DefaultDelay, petpet.DefaultDisposal)
 			if err != nil {
-				t.Fatal("MakeGIF returned error:", err)
+				t.Fatal("ExportWebp returned error:", err)
 			}
 
-			if output.Len() != img.len {
-				t.Fatalf("unexpected output length: got %d, want %d", output.Len(), img.len)
+			if output.Len() != img.webpLen {
+				t.Fatalf("unexpected output length: got %d, want %d", output.Len(), img.webpLen)
 			}
 		}
 	})
 
-	t.Run("Generate faster Gif", func(t *testing.T) {
+	t.Run("Generate GIF animation", func(t *testing.T) {
 		t.Parallel()
-
-		config := petpet.DefaultConfig
-		config.Delay = 2
 
 		for _, img := range images {
 			output := bytes.Buffer{}
 
-			err := petpet.MakeGif(img.img, &output, config, quantizers.HierarhicalQuantizer{})
+			imgs := petpet.MakeAnimation(img.img, petpet.DefaultImageSize, petpet.DefaultImageSize)
+			err := petpet.ExportGIF(&output, imgs, petpet.DefaultDelay, petpet.DefaultDisposal)
 			if err != nil {
-				t.Fatal("MakeGIF returned error:", err)
+				t.Fatal("ExportGIF returned error:", err)
 			}
 
-			if output.Len() != img.len {
-				t.Fatalf("unexpected output length: got %d, want %d", output.Len(), img.len)
+			if output.Len() != img.gifLen {
+				t.Fatalf("unexpected output length: got %d, want %d", output.Len(), img.gifLen)
 			}
 		}
 	})
