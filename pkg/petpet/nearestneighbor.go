@@ -1,4 +1,4 @@
-package quantizers
+package petpet
 
 import (
 	"image"
@@ -12,9 +12,7 @@ const (
 	sampleHeight = 4
 )
 
-type NearestNeighborQuantizer struct{}
-
-func (NearestNeighborQuantizer) QuantizeImage(img image.Image, numColors int) ([]color.Color, error) {
+func quantizeImage(img image.Image, numColors int) ([]color.Color, error) {
 	smallImg := resize.Resize(sampleWidth, sampleHeight, img, resize.NearestNeighbor)
 	bounds := smallImg.Bounds()
 	var palette []color.Color

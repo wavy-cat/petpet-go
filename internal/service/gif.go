@@ -21,20 +21,16 @@ type GIFService interface {
 }
 
 type gifService struct {
-	config    petpet.Config
-	quantizer petpet.Quantizer
-	cache     cache.BytesCache
-	provider  avatarproviders.Provider
+	config   petpet.Config
+	cache    cache.BytesCache
+	provider avatarproviders.Provider
 }
 
-func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider,
-	config petpet.Config, quantizer petpet.Quantizer) GIFService {
-
+func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider, config petpet.Config) GIFService {
 	return &gifService{
-		config:    config,
-		quantizer: quantizer,
-		cache:     cacheInstance,
-		provider:  provider,
+		config:   config,
+		cache:    cacheInstance,
+		provider: provider,
 	}
 }
 
@@ -95,7 +91,8 @@ func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, del
 	var buf bytes.Buffer
 	defer buf.Reset()
 
-	if err := petpet.MakeGif(img, &buf, config, s.quantizer); err != nil {
+	frames := petpet.MakeAnimation(img, config)
+	if err := petpet.ExportGIF(&buf, frames, config); err != nil {
 		return nil, err
 	}
 

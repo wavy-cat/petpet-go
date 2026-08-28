@@ -12,7 +12,6 @@ import (
 	"github.com/wavy-cat/petpet-go/pkg/avatarproviders/discord"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
-	"github.com/wavy-cat/petpet-go/pkg/petpet/quantizers"
 )
 
 func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) error {
@@ -27,8 +26,7 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 
 		discordGifService := service.NewGIFService(cacheInstance,
 			discord.NewProvider(cfg.BotToken),
-			petpet.DefaultConfig,
-			quantizers.HierarhicalQuantizer{})
+			petpet.DefaultConfig)
 		gifHandler := discord_handler.NewHandler(discordGifService)
 
 		r.Get("/discord/{user_id}.gif", gifHandler)
@@ -40,8 +38,7 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 	if cfg.CustomUpload.Enable {
 		customGifService := service.NewGIFService(cacheInstance,
 			nil,
-			petpet.DefaultConfig,
-			quantizers.HierarhicalQuantizer{})
+			petpet.DefaultConfig)
 		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
 
 		r.Post("/custom", uploadHandler)

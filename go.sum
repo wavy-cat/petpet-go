@@ -1,6 +1,8 @@
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
+github.com/HugoSmits86/nativewebp v1.3.0 h1:n1egtEzSV4KwFtealr7dzdYq1wI/uj/bOQ/QcTcIyVE=
+github.com/HugoSmits86/nativewebp v1.3.0/go.mod h1:YNQuWenlVmSUUASVNhTDwf4d7FwYQGbGhklC8p72Vr8=
 github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88 h1:EgonejJ+bvJhCoGqJc2Thr93biEv9D2QRjXDaYDjr5U=
 github.com/Nykakin/eigenvalues v0.0.0-20180218201739-8f7f53af5d88/go.mod h1:dO+3fLK/eeT19asBbQ3M+jL2nXaos6zbOMCT3nFXK0c=
 github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e h1:jZ//lt2fy3A5j5lEGMMK38K21Bucv7npcXyKTL4gqdk=
