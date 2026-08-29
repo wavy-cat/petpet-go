@@ -30,7 +30,7 @@ const RequestCfRayHeader = "Cf-Ray"
 
 // LoggerFromContext returns the request logger stored by Logger.
 func LoggerFromContext(ctx context.Context) *zap.Logger {
-	logger := ctx.Value(LoggerKey).(*zap.Logger)
+	logger := ctx.Value(LoggerKey).(*zap.Logger) //nolint:errcheck // an impossible situation
 	return logger
 }
 

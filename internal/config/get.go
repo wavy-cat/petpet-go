@@ -18,10 +18,8 @@ func GetEnvConfig() (Config, error) {
 }
 
 func GetConfig(path string) (Config, error) {
-	var pathError *fs.PathError
-
 	cfg, err := GetYMLConfig(path)
-	if errors.As(err, &pathError) {
+	if _, ok := errors.AsType[*fs.PathError](err); ok {
 		cfg, err = GetEnvConfig()
 	}
 	if err != nil {

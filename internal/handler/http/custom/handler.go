@@ -80,8 +80,7 @@ func decodeUploadedImage(
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if errors.As(err, &maxBytesErr) {
+		if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
 			return nil, fmt.Sprintf(
 				"Failed to parse upload. Make sure the file is smaller than %d bytes.",
 				uploadCfg.MaxUploadSize,
