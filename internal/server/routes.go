@@ -30,8 +30,16 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 		gifHandler := discord_handler.NewHandler(discordGifService)
 
 		r.Get("/discord/{user_id}.gif", gifHandler)
-		r.Get("/discord/{user_id}", gifHandler)
 		r.Get("/ds/{user_id}.gif", gifHandler)
+
+		// WebP service
+		discordWebpService := webp.NewWebPService(cacheInstance,
+			discord.NewProvider(cfg.BotToken))
+		webpHandler := discord_handler.NewHandler(discordWebpService)
+
+		r.Get("/discord/{user_id}.webp", webpHandler)
+		r.Get("/discord/{user_id}", gifHandler)
+		r.Get("/ds/{user_id}.webp", webpHandler)
 		r.Get("/ds/{user_id}", gifHandler)
 	}
 
@@ -40,7 +48,7 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 			nil)
 		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
 
-		r.Post("/custom", uploadHandler)
+		r.Post("/custom", uploadHandler) // TODO: Добавить поддержку webp
 		r.Post("/c", uploadHandler)
 	}
 
