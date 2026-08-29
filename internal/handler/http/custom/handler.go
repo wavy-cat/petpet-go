@@ -13,7 +13,7 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/internal/service"
+	"github.com/wavy-cat/petpet-go/internal/service/animation"
 	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
 	_ "golang.org/x/image/webp" // Register the WebP decoder for image.Decode.
@@ -23,7 +23,7 @@ const uploadFormName = "image"
 
 var errNoUploadFile = errors.New("no upload file")
 
-func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) http.HandlerFunc {
+func NewHandler(gifService animation.Service, uploadCfg config.CustomUpload) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := middleware.LoggerFromContext(r.Context())
 
@@ -40,14 +40,14 @@ func NewHandler(gifService service.GIFService, uploadCfg config.CustomUpload) ht
 			return
 		}
 
-		gif, err := gifService.GenerateGifFromImage(r.Context(), img, delay)
+		gif, err := gifService.GenerateFromImage(r.Context(), img, delay)
 		if err != nil {
-			logger.Error("Error during GIF generation", zap.Error(err))
-			utils.RespondSoftError(w, "Failed to generate GIF", logger)
+			logger.Error("Error during animation generation", zap.Error(err))
+			utils.RespondSoftError(w, "Failed to generate animation", logger)
 			return
 		}
 
-		if _, err := responses.RespondContent(w, "image/gif", gif); err != nil {
+		if _, err := responses.RespondContent(w, gifService.GetMimeContentType(), gif); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 	}

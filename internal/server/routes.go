@@ -8,7 +8,8 @@ import (
 	"github.com/wavy-cat/petpet-go/internal/config"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/custom"
 	discord_handler "github.com/wavy-cat/petpet-go/internal/handler/http/discord"
-	"github.com/wavy-cat/petpet-go/internal/service"
+	"github.com/wavy-cat/petpet-go/internal/service/animation/gif"
+	"github.com/wavy-cat/petpet-go/internal/service/animation/webp"
 	"github.com/wavy-cat/petpet-go/pkg/avatarproviders/discord"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 )
@@ -23,7 +24,8 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 			return errors.New("discord bot token is required when Discord is enabled")
 		}
 
-		discordGifService := service.NewGIFService(cacheInstance,
+		// GIF service
+		discordGifService := gif.NewGIFService(cacheInstance,
 			discord.NewProvider(cfg.BotToken))
 		gifHandler := discord_handler.NewHandler(discordGifService)
 
@@ -34,7 +36,7 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 	}
 
 	if cfg.CustomUpload.Enable {
-		customGifService := service.NewGIFService(cacheInstance,
+		customGifService := gif.NewGIFService(cacheInstance,
 			nil)
 		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
 

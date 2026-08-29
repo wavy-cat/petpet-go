@@ -7,12 +7,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/wavy-cat/petpet-go/internal/handler/http/utils"
 	"github.com/wavy-cat/petpet-go/internal/middleware"
-	"github.com/wavy-cat/petpet-go/internal/service"
+	"github.com/wavy-cat/petpet-go/internal/service/animation"
 	"github.com/wavy-cat/petpet-go/pkg/responses"
 	"go.uber.org/zap"
 )
 
-func NewHandler(gifService service.GIFService) http.HandlerFunc {
+func NewHandler(gifService animation.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := middleware.LoggerFromContext(r.Context())
 
@@ -34,14 +34,14 @@ func NewHandler(gifService service.GIFService) http.HandlerFunc {
 		if r.URL.Query().Get("no-cache") == "true" {
 			utils.SetNoCacheHeaders(w)
 		}
-		gif, err := gifService.GetOrGenerateGif(r.Context(), userID, delay)
+		gif, err := gifService.GetOrGenerate(r.Context(), userID, delay)
 		if err != nil {
 			logger.Error("Error during GIF generation", zap.Error(err), zap.String("user_id", userID))
 			utils.RespondSoftError(w, utils.ParseDiscordError(err), logger)
 			return
 		}
 
-		if _, err := responses.RespondContent(w, "image/gif", gif); err != nil {
+		if _, err := responses.RespondContent(w, gifService.GetMimeContentType(), gif); err != nil {
 			logger.Error("Error sending response", zap.Error(err))
 		}
 	}

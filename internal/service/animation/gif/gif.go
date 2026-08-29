@@ -1,4 +1,4 @@
-package service
+package gif
 
 import (
 	"bytes"
@@ -9,30 +9,30 @@ import (
 	"image/png"
 
 	"github.com/wavy-cat/petpet-go/internal/middleware"
+	"github.com/wavy-cat/petpet-go/internal/service/animation"
 	"github.com/wavy-cat/petpet-go/pkg/avatarproviders"
 	"github.com/wavy-cat/petpet-go/pkg/cache"
 	"github.com/wavy-cat/petpet-go/pkg/petpet"
 	"go.uber.org/zap"
 )
 
-type GIFService interface {
-	GetOrGenerateGif(ctx context.Context, userID string, delay int) ([]byte, error)
-	GenerateGifFromImage(ctx context.Context, img image.Image, delay int) ([]byte, error)
-}
-
 type gifService struct {
 	cache    cache.BytesCache
 	provider avatarproviders.Provider
 }
 
-func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider) GIFService {
+func NewGIFService(cacheInstance cache.BytesCache, provider avatarproviders.Provider) animation.Service {
 	return &gifService{
 		cache:    cacheInstance,
 		provider: provider,
 	}
 }
 
-func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay int) ([]byte, error) {
+func (s gifService) GetMimeContentType() string {
+	return "image/gif"
+}
+
+func (s gifService) GetOrGenerate(ctx context.Context, userID string, delay int) ([]byte, error) {
 	logger := middleware.LoggerFromContext(ctx)
 
 	userAvatar, err := s.provider.GetUserAvatar(ctx, userID)
@@ -66,7 +66,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay i
 		return nil, fmt.Errorf("error decoding avatar image: %w", err)
 	}
 
-	data, err := s.GenerateGifFromImage(ctx, decodedImage, delay)
+	data, err := s.GenerateFromImage(ctx, decodedImage, delay)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (s gifService) GetOrGenerateGif(ctx context.Context, userID string, delay i
 	return data, nil
 }
 
-func (s gifService) GenerateGifFromImage(_ context.Context, img image.Image, delay int) ([]byte, error) {
+func (s gifService) GenerateFromImage(_ context.Context, img image.Image, delay int) ([]byte, error) {
 	var buf bytes.Buffer
 	defer buf.Reset()
 
