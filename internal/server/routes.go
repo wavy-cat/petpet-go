@@ -40,12 +40,19 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 	}
 
 	if cfg.CustomUpload.Enable {
-		customGifService := gif.NewGIFService(cacheInstance,
-			nil)
-		uploadHandler := custom.NewHandler(customGifService, cfg.CustomUpload)
+		// GIF Service
+		gifHandler := custom.NewHandler(gif.NewGIFService(cacheInstance, nil), cfg.CustomUpload)
 
-		r.Post("/custom", uploadHandler) // TODO: Добавить поддержку webp
-		r.Post("/c", uploadHandler)
+		r.Post("/custom/gif", gifHandler)
+		r.Post("/c/gif", gifHandler)
+
+		// WebP service
+		webpHandler := custom.NewHandler(webp.NewWebPService(cacheInstance, nil), cfg.CustomUpload)
+
+		r.Post("/custom/webp", webpHandler)
+		r.Post("/custom", webpHandler)
+		r.Post("/c/webp", webpHandler)
+		r.Post("/c", webpHandler)
 	}
 
 	return nil
