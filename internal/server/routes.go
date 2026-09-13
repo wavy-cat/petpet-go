@@ -25,22 +25,18 @@ func addRoutes(r *chi.Mux, cfg config.Config, cacheInstance cache.BytesCache) er
 		}
 
 		// GIF service
-		discordGifService := gif.NewGIFService(cacheInstance,
-			discord.NewProvider(cfg.BotToken))
-		gifHandler := discord_handler.NewHandler(discordGifService)
+		gifHandler := discord_handler.NewHandler(gif.NewGIFService(cacheInstance, discord.NewProvider(cfg.BotToken)))
 
 		r.Get("/discord/{user_id}.gif", gifHandler)
 		r.Get("/ds/{user_id}.gif", gifHandler)
 
 		// WebP service
-		discordWebpService := webp.NewWebPService(cacheInstance,
-			discord.NewProvider(cfg.BotToken))
-		webpHandler := discord_handler.NewHandler(discordWebpService)
+		webpHandler := discord_handler.NewHandler(webp.NewWebPService(cacheInstance, discord.NewProvider(cfg.BotToken)))
 
 		r.Get("/discord/{user_id}.webp", webpHandler)
-		r.Get("/discord/{user_id}", gifHandler)
+		r.Get("/discord/{user_id}", webpHandler)
 		r.Get("/ds/{user_id}.webp", webpHandler)
-		r.Get("/ds/{user_id}", gifHandler)
+		r.Get("/ds/{user_id}", webpHandler)
 	}
 
 	if cfg.CustomUpload.Enable {
