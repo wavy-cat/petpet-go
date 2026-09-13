@@ -15,22 +15,22 @@ func TestAnimation(t *testing.T) {
 	t.Parallel()
 
 	images := []struct {
-		img         image.Image
-		webpLen     int
-		webpLenTol  float64
-		gifLen      int
+		img        image.Image
+		webpLen    int
+		webpLenTol float64
+		gifLen     int
 	}{
 		{
-			img:         getImage("wavycat.png"),
-			webpLen:     35202,
-			webpLenTol:  0.10,
-			gifLen:      78768,
+			img:        getImage("wavycat.png"),
+			webpLen:    35202,
+			webpLenTol: 0.10,
+			gifLen:     78768,
 		},
 		{
-			img:         getImage("tasica.png"),
-			webpLen:     50648,
-			webpLenTol:  0.10,
-			gifLen:      66969,
+			img:        getImage("tasica.png"),
+			webpLen:    50648,
+			webpLenTol: 0.10,
+			gifLen:     66969,
 		},
 	}
 
