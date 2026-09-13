@@ -3,7 +3,7 @@ module github.com/wavy-cat/petpet-go
 go 1.26.4
 
 require (
-	github.com/HugoSmits86/nativewebp v1.3.0
+	github.com/KarpelesLab/gowebp v0.1.1
 	github.com/Nykakin/quantize v0.0.0-20190320194030-e96048211e3e
 	github.com/aws/aws-sdk-go-v2 v1.45.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.1

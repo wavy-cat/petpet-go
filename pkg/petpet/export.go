@@ -8,12 +8,14 @@ import (
 	"image/gif"
 	"io"
 
-	"github.com/HugoSmits86/nativewebp"
+	"github.com/KarpelesLab/gowebp"
 )
 
 const (
 	maxPaletteColors           = 256
 	webpMillisecondsPerGIFTick = 10
+	webpQuality                = 85
+	webpMethod                 = 2
 )
 
 // ExportGIF writes animation frames in GIF format.
@@ -43,13 +45,17 @@ func ExportWebp(w io.Writer, images []image.Image, delay int, disposal byte) err
 		return err
 	}
 
-	return nativewebp.EncodeAll(w, &nativewebp.Animation{
+	return gowebp.EncodeAll(w, &gowebp.Animation{
 		Images:          images,
 		Durations:       webpDurations(len(images), delay),
 		Disposals:       webpDisposals(len(images), disposal),
 		LoopCount:       0,
 		BackgroundColor: 0,
-	}, nil)
+	}, &gowebp.Options{
+		Lossy:   true,
+		Quality: webpQuality,
+		Method:  webpMethod,
+	})
 }
 
 var errNoImages = errors.New("must provide at least one image")

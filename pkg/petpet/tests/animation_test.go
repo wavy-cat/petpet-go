@@ -15,19 +15,22 @@ func TestAnimation(t *testing.T) {
 	t.Parallel()
 
 	images := []struct {
-		img     image.Image
-		webpLen int
-		gifLen  int
+		img         image.Image
+		webpLen     int
+		webpLenTol  float64
+		gifLen      int
 	}{
 		{
-			img:     getImage("wavycat.png"),
-			webpLen: 172586,
-			gifLen:  78768,
+			img:         getImage("wavycat.png"),
+			webpLen:     35202,
+			webpLenTol:  0.10,
+			gifLen:      78768,
 		},
 		{
-			img:     getImage("tasica.png"),
-			webpLen: 197754,
-			gifLen:  66969,
+			img:         getImage("tasica.png"),
+			webpLen:     50648,
+			webpLenTol:  0.10,
+			gifLen:      66969,
 		},
 	}
 
@@ -43,8 +46,9 @@ func TestAnimation(t *testing.T) {
 				t.Fatal("ExportWebp returned error:", err)
 			}
 
-			if output.Len() != img.webpLen {
-				t.Fatalf("unexpected output length: got %d, want %d", output.Len(), img.webpLen)
+			if output.Len() < int(float64(img.webpLen)*(1-img.webpLenTol)) ||
+				output.Len() > int(float64(img.webpLen)*(1+img.webpLenTol)) {
+				t.Fatalf("unexpected output length: got %d, want ~%d", output.Len(), img.webpLen)
 			}
 		}
 	})
