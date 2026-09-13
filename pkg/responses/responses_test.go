@@ -26,8 +26,9 @@ func TestRespondContent(t *testing.T) {
 		t.Errorf("unexpected Content-Type header: got %s, want %s", w.Header().Get("Content-Type"), contentType)
 	}
 
-	if w.Header().Get("Content-Length") != strconv.Itoa(len(content)) {
-		t.Errorf("unexpected Content-Length header: got %s, want %s", w.Header().Get("Content-Length"), strconv.Itoa(len(content)))
+	wantLength := strconv.Itoa(len(content))
+	if w.Header().Get("Content-Length") != wantLength {
+		t.Errorf("unexpected Content-Length header: got %s, want %s", w.Header().Get("Content-Length"), wantLength)
 	}
 
 	if !bytes.Equal(w.Body.Bytes(), content) {
