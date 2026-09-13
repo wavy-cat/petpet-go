@@ -3,12 +3,14 @@ package responses
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 // RespondContent sends any content as well as the type of content in the header.
 func RespondContent(w http.ResponseWriter, contentType string, content []byte) (int, error) {
 	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", strconv.Itoa(len(content)))
 
 	return w.Write(content)
 }

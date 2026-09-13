@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -23,6 +24,10 @@ func TestRespondContent(t *testing.T) {
 
 	if w.Header().Get("Content-Type") != contentType {
 		t.Errorf("unexpected Content-Type header: got %s, want %s", w.Header().Get("Content-Type"), contentType)
+	}
+
+	if w.Header().Get("Content-Length") != strconv.Itoa(len(content)) {
+		t.Errorf("unexpected Content-Length header: got %s, want %s", w.Header().Get("Content-Length"), strconv.Itoa(len(content)))
 	}
 
 	if !bytes.Equal(w.Body.Bytes(), content) {
@@ -67,10 +72,11 @@ func TestRespondSoftError(t *testing.T) {
 	}
 
 	headers := map[string]string{
-		"Cache-Control": "no-store, no-cache, must-revalidate, private",
-		"Pragma":        "no-cache",
-		"Expires":       "0",
-		"Content-Type":  "text/html",
+		"Cache-Control":  "no-store, no-cache, must-revalidate, private",
+		"Pragma":         "no-cache",
+		"Expires":        "0",
+		"Content-Type":   "text/html",
+		"Content-Length": strconv.Itoa(len(w.Body.Bytes())),
 	}
 
 	for k, v := range headers {
