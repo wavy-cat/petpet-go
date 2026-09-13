@@ -10,24 +10,30 @@ A web service for generating petpet GIFs based on a Discord user's avatar, writt
 
 ### Discord avatar
 
-<kbd>GET</kbd> `/discord/{user_id}.gif` or `/ds/{user_id}.gif`
+<kbd>GET</kbd> `/discord/{user_id}` or `/ds/{user_id}`
+
+By default, the response is a WebP. Prepend `.gif` or `.webp` to the `{user_id}` path segment to force a specific format, e.g. `/discord/{user_id}.gif`.
 
 #### Path parameters
 
 | Name        | Type      | Description           |
 |-------------|-----------|-----------------------|
-| `{user_id}` | Snowflake | The Discord user's ID |             
+| `{user_id}` | Snowflake | The Discord user's ID |
 
 #### Query parameters
 
 | Name       | Default | Type             | Description                                        |
 |------------|---------|------------------|----------------------------------------------------|
-| `delay`    | `4`     | Unsigned Integer | GIF speed. Bigger is slower                        |
+| `delay`    | `4`     | Unsigned Integer | Animation speed. Bigger is slower                  |
 | `no-cache` | `false` | Boolean          | Whether to disable caching (Cache-Control headers) |
 
 ### Custom upload
 
-<kbd>POST</kbd> `/custom` or `/c`
+<kbd>POST</kbd> `/custom` or `/c` (WebP)
+
+<kbd>POST</kbd> `/custom/gif` or `/c/gif` (GIF)
+
+<kbd>POST</kbd> `/custom/webp` or `/c/webp` (WebP)
 
 Send a `multipart/form-data` request with a file field named `image` containing a PNG, JPEG or WebP.
 
