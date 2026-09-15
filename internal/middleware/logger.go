@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -38,19 +37,23 @@ func Logger(logger *zap.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
-			requestID, err := getRequestID(r)
-			if err != nil {
-				logger.Fatal("Failed to generate request ID", zap.Error(err))
+			requestID, ok := getExistsRequestID(r)
+			if !ok {
+				var err error
+				requestID, err = gonanoid.New()
+				if err != nil {
+					logger.Fatal("Failed to generate request ID", zap.Error(err))
+				}
+
+				ww.Header().Add(RequestIDHeader, requestID)
 			}
 
 			logger := logger.With(zap.String("requestId", requestID))
 
 			ctx = context.WithValue(ctx, RequestIDKey, requestID)
 			ctx = context.WithValue(ctx, LoggerKey, logger)
-
-			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			ww.Header().Add(RequestIDHeader, requestID)
 
 			t1 := time.Now()
 			defer func() {
@@ -72,20 +75,16 @@ func Logger(logger *zap.Logger) func(next http.Handler) http.Handler {
 	}
 }
 
-func getRequestID(r *http.Request) (string, error) {
+func getExistsRequestID(r *http.Request) (string, bool) {
 	// header X-Request-ID
 	if requestID := r.Header.Get(RequestIDHeader); requestID != "" {
-		return requestID, nil
+		return requestID, true
 	}
 
 	// header Cf-Ray
 	if requestID := r.Header.Get(RequestCfRayHeader); requestID != "" {
-		return requestID, nil
+		return requestID, true
 	}
 
-	requestID, err := gonanoid.New()
-	if err != nil {
-		return "", fmt.Errorf("error when generate request id: %w", err)
-	}
-	return requestID, nil
+	return "", false
 }
